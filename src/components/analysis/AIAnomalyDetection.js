@@ -1,699 +1,795 @@
 import React, { useState, useEffect } from 'react';
 import {
   AlertTriangle,
-  TrendingUp,
-  Search,
+  BarChart2,
+  Bell,
   Clock,
-  Zap,
-  Shield,
-  RefreshCw,
-  Activity,
-  Download,
-  Eye,
   Filter,
+  Eye,
+  RefreshCw,
+  Flag,
   Check,
+  X,
 } from 'lucide-react';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from 'recharts';
+import styled from 'styled-components';
 
-const AIAnomalyDetection = () => {
-  const [anomalies, setAnomalies] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [activeFilter, setActiveFilter] = useState('all');
-  const [timeRange, setTimeRange] = useState('24h');
-  const [detectionRunning, setDetectionRunning] = useState(false);
-  const [stats, setStats] = useState({
-    totalScanned: 0,
-    anomaliesDetected: 0,
-    falsePositives: 0,
-    accuracy: 0,
+// Styled components for the anomaly detection UI
+const Container = styled.div`
+  padding: 20px;
+  background-color: #f0f0f0;
+  font-family: Arial, sans-serif;
+`;
+
+const Header = styled.div`
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+`;
+
+const Title = styled.h2`
+  font-size: 24px;
+  font-weight: bold;
+  margin: 0;
+  margin-left: 10px;
+`;
+
+const Card = styled.div`
+  background-color: white;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+`;
+
+const CardHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+`;
+
+const CardTitle = styled.h3`
+  font-size: 18px;
+  margin: 0;
+  display: flex;
+  align-items: center;
+`;
+
+const IconWrapper = styled.span`
+  margin-right: 8px;
+  display: inline-flex;
+`;
+
+const FilterContainer = styled.div`
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+`;
+
+const FilterButton = styled.button`
+  padding: 8px 15px;
+  background-color: ${(props) => (props.active ? '#3385ad' : '#f1f1f1')};
+  color: ${(props) => (props.active ? 'white' : '#333')};
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: all 0.2s;
+
+  &:hover {
+    background-color: ${(props) => (props.active ? '#286d8e' : '#e0e0e0')};
+  }
+`;
+
+const RefreshButton = styled.button`
+  padding: 8px 15px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: #388e3c;
+  }
+`;
+
+const StatsContainer = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 15px;
+  margin-bottom: 20px;
+`;
+
+const StatCard = styled.div`
+  background-color: ${(props) => props.bgColor || '#f9f9f9'};
+  padding: 15px;
+  border-radius: 8px;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+`;
+
+const StatValue = styled.div`
+  font-size: 24px;
+  font-weight: bold;
+  color: ${(props) => props.color || '#333'};
+  margin-bottom: 5px;
+`;
+
+const StatLabel = styled.div`
+  font-size: 14px;
+  color: #777;
+`;
+
+const AnomalyList = styled.div`
+  margin-top: 20px;
+`;
+
+const AnomalyItem = styled.div`
+  padding: 15px;
+  background-color: ${(props) =>
+    props.severity === 'high'
+      ? '#ffebee'
+      : props.severity === 'medium'
+      ? '#fff8e1'
+      : '#e8f5e9'};
+  border-left: 4px solid
+    ${(props) =>
+      props.severity === 'high'
+        ? '#f44336'
+        : props.severity === 'medium'
+        ? '#ffc107'
+        : '#4caf50'};
+  border-radius: 4px;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`;
+
+const AnomalyInfo = styled.div`
+  flex: 1;
+`;
+
+const AnomalyTitle = styled.div`
+  font-weight: bold;
+  margin-bottom: 5px;
+  display: flex;
+  align-items: center;
+`;
+
+const AnomalyDescription = styled.div`
+  font-size: 14px;
+  color: #555;
+`;
+
+const AnomalyMeta = styled.div`
+  display: flex;
+  gap: 15px;
+  margin-top: 5px;
+  font-size: 12px;
+  color: #777;
+`;
+
+const AnomalyMetaItem = styled.div`
+  display: flex;
+  align-items: center;
+`;
+
+const AnomalyActions = styled.div`
+  display: flex;
+  gap: 10px;
+`;
+
+const ActionButton = styled.button`
+  padding: 5px 10px;
+  background-color: ${(props) => props.color || '#3385ad'};
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: ${(props) => props.hoverColor || '#286d8e'};
+  }
+`;
+
+const ChartWrapper = styled.div`
+  height: 300px;
+  margin-top: 20px;
+`;
+
+// Mock data for anomalies
+const generateMockAnomalies = () => {
+  const anomalyTypes = [
+    {
+      type: 'voltage',
+      title: 'Anomalia di Tensione',
+      description: 'Variazione di tensione superiore al 5% rilevata',
+    },
+    {
+      type: 'frequency',
+      title: 'Deviazione di Frequenza',
+      description: 'Oscillazione di frequenza oltre i limiti normali',
+    },
+    {
+      type: 'load',
+      title: 'Picco di Carico',
+      description: 'Aumento improvviso del carico oltre la capacità prevista',
+    },
+    {
+      type: 'generation',
+      title: 'Oscillazione di Generazione',
+      description: 'Variazione rapida nella generazione rinnovabile',
+    },
+    {
+      type: 'transformer',
+      title: 'Sovraccarico Trasformatore',
+      description: 'Temperatura del trasformatore sopra la norma',
+    },
+    {
+      type: 'line',
+      title: 'Congestione Linea',
+      description: 'Linea di trasmissione operante vicino al limite',
+    },
+  ];
+
+  const locations = [
+    'Sottostazione Milano Ovest',
+    'Nodo Roma Nord',
+    'Linea Firenze-Bologna',
+    'Trasformatore AT/MT Napoli',
+    'Interconnessione Italia-Francia',
+    'Centrale Eolica Foggia',
+  ];
+
+  const severities = ['low', 'medium', 'high'];
+
+  const anomalies = [];
+  for (let i = 0; i < 8; i++) {
+    const anomalyType =
+      anomalyTypes[Math.floor(Math.random() * anomalyTypes.length)];
+    const location = locations[Math.floor(Math.random() * locations.length)];
+    const severity = severities[Math.floor(Math.random() * severities.length)];
+    const timestamp = new Date(
+      Date.now() - Math.random() * 36 * 60 * 60 * 1000
+    ); // Random time in the last 36 hours
+
+    anomalies.push({
+      id: i + 1,
+      type: anomalyType.type,
+      title: anomalyType.title,
+      description: anomalyType.description,
+      location: location,
+      severity: severity,
+      timestamp: timestamp,
+      value: Math.round((Math.random() * 50 + 50) * 100) / 100, // Random value between 50 and 100
+      threshold: 95,
+      acknowledged: Math.random() > 0.7,
+    });
+  }
+
+  return anomalies.sort((a, b) => {
+    const severityOrder = { high: 0, medium: 1, low: 2 };
+    return (
+      severityOrder[a.severity] - severityOrder[b.severity] ||
+      b.timestamp - a.timestamp
+    );
   });
+};
 
-  // Simulated data for the component
-  const generateMockAnomalies = () => {
-    const types = ['voltage', 'frequency', 'load', 'cyber', 'communication'];
-    const severities = ['critical', 'high', 'medium', 'low'];
-    const locations = [
-      'Sottostazione Milano Nord',
-      'Linea AT Roma-Napoli',
-      'Trasformatore Firenze Sud',
-      'Nodo di scambio Palermo',
-      'Sistema SCADA Centrale',
-      'Generatore Brindisi',
-      'PMU Bologna',
-    ];
+// Generate time series data for charts
+const generateTimeSeriesData = (anomalyType, anomalyTime) => {
+  const now = new Date();
+  const data = [];
 
-    const anomalies = [];
-    const now = new Date();
+  // Generate data for the past 24 hours
+  for (let i = 24; i >= 0; i--) {
+    const time = new Date(now.getTime() - i * 60 * 60 * 1000);
+    const hour = time.getHours();
 
-    // Generate between 4-8 anomalies
-    const count = Math.floor(Math.random() * 5) + 4;
-
-    for (let i = 0; i < count; i++) {
-      const type = types[Math.floor(Math.random() * types.length)];
-      const severity =
-        severities[Math.floor(Math.random() * severities.length)];
-      const location = locations[Math.floor(Math.random() * locations.length)];
-
-      // Create timestamp between now and 24 hours ago
-      const timestamp = new Date(now - Math.random() * 24 * 60 * 60 * 1000);
-
-      let description = '';
-      let impact = '';
-      let recommendation = '';
-      let relatedParams = [];
-
-      switch (type) {
-        case 'voltage':
-          description = `Anomalia di tensione rilevata: ${
-            Math.floor(Math.random() * 30) + 370
-          } kV, valore fuori dai parametri standard.`;
-          impact = 'Rischio di sovratensione sui componenti di rete connessi.';
-          recommendation =
-            'Verificare regolatori di tensione e considerare redistribuzione di carico reattivo.';
-          relatedParams = ['Tensione', 'Potenza reattiva', 'Tap changer'];
-          break;
-        case 'frequency':
-          description = `Variazione anomala di frequenza: ${(
-            49.8 +
-            Math.random() * 0.4
-          ).toFixed(2)} Hz, oscillazioni non standard rilevate.`;
-          impact = 'Potenziale instabilità nella sincronizzazione di rete.';
-          recommendation =
-            'Verificare riserva primaria e valutare attivazione di generazione aggiuntiva.';
-          relatedParams = ['Frequenza', 'Potenza attiva', 'Riserva rotante'];
-          break;
-        case 'load':
-          description = `Comportamento anomalo del carico: incremento improvviso del ${
-            Math.floor(Math.random() * 30) + 20
-          }% in 15 minuti.`;
-          impact =
-            "Sovraccarico potenziale su linee di trasmissione nell'area.";
-          recommendation =
-            'Attivare redistribuzione di carico e preparare risorse di regolazione.';
-          relatedParams = [
-            'Potenza attiva',
-            'Corrente di linea',
-            'Temperatura conduttori',
-          ];
-          break;
-        case 'cyber':
-          description =
-            'Pattern sospetti di accesso rilevati sul sistema di telecontrollo.';
-          impact = 'Potenziale compromissione della sicurezza operativa.';
-          recommendation =
-            'Isolare sistema interessato e attivare protocollo di risposta agli incidenti.';
-          relatedParams = [
-            'Log accessi',
-            'Traffico di rete',
-            'Attività utenti',
-          ];
-          break;
-        case 'communication':
-          description =
-            'Perdita intermittente di comunicazione con RTU remota.';
-          impact = 'Osservabilità ridotta nella zona interessata.';
-          recommendation =
-            'Verificare connettività e integrità canali di comunicazione.';
-          relatedParams = ['Latenza', 'Pacchetti persi', 'Qualità segnale'];
-          break;
-        default:
-          description = 'Anomalia generale rilevata nel sistema.';
-      }
-
-      anomalies.push({
-        id: `anomaly-${i + 1}-${Date.now()}`,
-        type,
-        severity,
-        location,
-        timestamp,
-        description,
-        impact,
-        recommendation,
-        relatedParams,
-        confidence: Math.floor(Math.random() * 30) + 70,
-        acknowledged: Math.random() > 0.7,
-        resolved: Math.random() > 0.8,
-      });
+    let value;
+    // Base value depends on time of day (simulating daily patterns)
+    if (hour >= 8 && hour <= 20) {
+      value = 80 + Math.random() * 10; // Higher during the day
+    } else {
+      value = 70 + Math.random() * 10; // Lower at night
     }
 
-    // Sort by severity and then by timestamp (most recent first)
-    return anomalies.sort((a, b) => {
-      const severityOrder = { critical: 0, high: 1, medium: 2, low: 3 };
-      if (severityOrder[a.severity] !== severityOrder[b.severity]) {
-        return severityOrder[a.severity] - severityOrder[b.severity];
+    // If this time is close to the anomaly time, create a spike or dip
+    if (
+      anomalyTime &&
+      Math.abs(time.getTime() - anomalyTime.getTime()) < 2 * 60 * 60 * 1000
+    ) {
+      const hoursFromAnomaly =
+        Math.abs(time.getTime() - anomalyTime.getTime()) / (60 * 60 * 1000);
+      const anomalyEffect = (2 - hoursFromAnomaly) * 20; // Stronger effect closer to anomaly time
+
+      if (
+        anomalyType === 'voltage' ||
+        anomalyType === 'frequency' ||
+        anomalyType === 'load'
+      ) {
+        value += anomalyEffect; // Spike
+      } else {
+        value -= anomalyEffect; // Dip
       }
-      return b.timestamp - a.timestamp;
+    }
+
+    data.push({
+      time: time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      value: Math.max(0, Math.min(120, value)), // Clamp between 0 and 120
+      threshold: 95,
     });
-  };
+  }
 
-  // Filter anomalies based on active filter
-  const getFilteredAnomalies = () => {
-    if (activeFilter === 'all') return anomalies;
-    return anomalies.filter((anomaly) => anomaly.severity === activeFilter);
-  };
+  return data;
+};
 
-  // Initialize data
+/**
+ * AIAnomalyDetection component provides advanced anomaly detection for grid operations
+ * using machine learning algorithms to identify potential issues before they become critical
+ */
+const AIAnomalyDetection = () => {
+  const [anomalies, setAnomalies] = useState([]);
+  const [filteredAnomalies, setFilteredAnomalies] = useState([]);
+  const [activeFilter, setActiveFilter] = useState('all');
+  const [loading, setLoading] = useState(false);
+  const [stats, setStats] = useState({
+    total: 0,
+    high: 0,
+    medium: 0,
+    low: 0,
+    acknowledged: 0,
+  });
+  const [selectedAnomaly, setSelectedAnomaly] = useState(null);
+  const [chartData, setChartData] = useState([]);
+
+  // Initialize with mock data
   useEffect(() => {
-    // Simulate API call delay
-    setTimeout(() => {
-      const generatedAnomalies = generateMockAnomalies();
-      setAnomalies(generatedAnomalies);
-
-      // Update stats
-      setStats({
-        totalScanned: Math.floor(Math.random() * 400) + 600,
-        anomaliesDetected: generatedAnomalies.length,
-        falsePositives: Math.floor(Math.random() * 5),
-        accuracy: Math.floor(Math.random() * 10) + 90,
-      });
-
-      setIsLoading(false);
-    }, 1500);
+    refreshAnomalies();
   }, []);
 
-  // Start new detection
-  const handleStartDetection = () => {
-    setDetectionRunning(true);
-    setIsLoading(true);
+  // Update filtered anomalies when filter or anomalies change
+  useEffect(() => {
+    filterAnomalies(activeFilter);
+  }, [anomalies, activeFilter]);
 
-    // Simulate detection process
+  // Generate chart data when selected anomaly changes
+  useEffect(() => {
+    if (selectedAnomaly) {
+      setChartData(
+        generateTimeSeriesData(selectedAnomaly.type, selectedAnomaly.timestamp)
+      );
+    }
+  }, [selectedAnomaly]);
+
+  const refreshAnomalies = () => {
+    setLoading(true);
+
+    // Simulate API call delay
     setTimeout(() => {
       const newAnomalies = generateMockAnomalies();
       setAnomalies(newAnomalies);
 
-      // Update stats
-      setStats((prev) => ({
-        totalScanned: prev.totalScanned + Math.floor(Math.random() * 100) + 50,
-        anomaliesDetected: prev.anomaliesDetected + newAnomalies.length,
-        falsePositives: prev.falsePositives + Math.floor(Math.random() * 2),
-        accuracy: Math.min(100, prev.accuracy + (Math.random() > 0.7 ? 1 : -1)),
-      }));
+      // Update statistics
+      const newStats = {
+        total: newAnomalies.length,
+        high: newAnomalies.filter((a) => a.severity === 'high').length,
+        medium: newAnomalies.filter((a) => a.severity === 'medium').length,
+        low: newAnomalies.filter((a) => a.severity === 'low').length,
+        acknowledged: newAnomalies.filter((a) => a.acknowledged).length,
+      };
 
-      setIsLoading(false);
-      setDetectionRunning(false);
-    }, 3000);
+      setStats(newStats);
+      setLoading(false);
+    }, 1000);
   };
 
-  // Get color for severity
-  const getSeverityColor = (severity) => {
-    switch (severity) {
-      case 'critical':
-        return '#dc2626'; // Rosso
+  const filterAnomalies = (filter) => {
+    let filtered;
+
+    switch (filter) {
       case 'high':
-        return '#ea580c'; // Arancione
+        filtered = anomalies.filter((a) => a.severity === 'high');
+        break;
       case 'medium':
-        return '#ca8a04'; // Giallo
+        filtered = anomalies.filter((a) => a.severity === 'medium');
+        break;
       case 'low':
-        return '#65a30d'; // Verde
+        filtered = anomalies.filter((a) => a.severity === 'low');
+        break;
+      case 'unacknowledged':
+        filtered = anomalies.filter((a) => !a.acknowledged);
+        break;
       default:
-        return '#6b7280'; // Grigio
+        filtered = [...anomalies];
+    }
+
+    setFilteredAnomalies(filtered);
+  };
+
+  const handleAcknowledge = (id) => {
+    setAnomalies((prev) =>
+      prev.map((anomaly) =>
+        anomaly.id === id ? { ...anomaly, acknowledged: true } : anomaly
+      )
+    );
+  };
+
+  const handleDismiss = (id) => {
+    setAnomalies((prev) => prev.filter((anomaly) => anomaly.id !== id));
+    if (selectedAnomaly && selectedAnomaly.id === id) {
+      setSelectedAnomaly(null);
     }
   };
 
-  // Get icon for anomaly type
-  const getAnomalyIcon = (type) => {
-    switch (type) {
-      case 'voltage':
-        return <Zap size={16} className='anomaly-icon' />;
-      case 'frequency':
-        return <Activity size={16} className='anomaly-icon' />;
-      case 'load':
-        return <TrendingUp size={16} className='anomaly-icon' />;
-      case 'cyber':
-        return <Shield size={16} className='anomaly-icon' />;
-      case 'communication':
-        return <Zap size={16} className='anomaly-icon' />;
+  const handleViewDetails = (anomaly) => {
+    setSelectedAnomaly(anomaly);
+  };
+
+  // Get severity color for various UI elements
+  const getSeverityColor = (severity) => {
+    switch (severity) {
+      case 'high':
+        return '#f44336';
+      case 'medium':
+        return '#ffc107';
+      case 'low':
+        return '#4caf50';
       default:
-        return <AlertTriangle size={16} className='anomaly-icon' />;
+        return '#757575';
+    }
+  };
+
+  // Render severity icon with appropriate color
+  const renderSeverityIcon = (severity) => {
+    return (
+      <IconWrapper>
+        <AlertTriangle color={getSeverityColor(severity)} />
+      </IconWrapper>
+    );
+  };
+
+  // Render timestamp in a human-readable format
+  const formatTimestamp = (timestamp) => {
+    const now = new Date();
+    const diff = (now.getTime() - timestamp.getTime()) / 1000; // Difference in seconds
+
+    if (diff < 60) {
+      return 'Adesso';
+    } else if (diff < 3600) {
+      return `${Math.floor(diff / 60)} min fa`;
+    } else if (diff < 86400) {
+      return `${Math.floor(diff / 3600)} ore fa`;
+    } else {
+      return timestamp.toLocaleDateString();
     }
   };
 
   return (
-    <div className='anomaly-detection-container'>
-      <h2 className='anomaly-title'>
-        <AlertTriangle className='icon' /> Rilevamento Anomalie IA
-      </h2>
-      <p className='anomaly-description'>
-        Sistema avanzato di rilevamento anomalie basato su machine learning per
-        la rete elettrica
-      </p>
+    <Container>
+      <Header>
+        <AlertTriangle size={28} color='#d32f2f' />
+        <Title>Rilevamento Anomalie basato su AI</Title>
+      </Header>
 
-      {/* Statistiche */}
-      <div className='stats-section'>
-        <div className='stat-item'>
-          <div className='stat-value'>{stats.totalScanned}</div>
-          <div className='stat-label'>Parametri analizzati</div>
-        </div>
-        <div className='stat-item'>
-          <div className='stat-value'>{stats.anomaliesDetected}</div>
-          <div className='stat-label'>Anomalie rilevate</div>
-        </div>
-        <div className='stat-item'>
-          <div className='stat-value'>{stats.falsePositives}</div>
-          <div className='stat-label'>Falsi positivi</div>
-        </div>
-        <div className='stat-item'>
-          <div className='stat-value'>{stats.accuracy}%</div>
-          <div className='stat-label'>Accuratezza rilevamento</div>
-        </div>
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>
+            <IconWrapper>
+              <Bell />
+            </IconWrapper>
+            Panoramica Anomalie
+          </CardTitle>
+          <RefreshButton onClick={refreshAnomalies} disabled={loading}>
+            <RefreshCw size={18} style={{ marginRight: '5px' }} />
+            {loading ? 'Aggiornamento...' : 'Aggiorna'}
+          </RefreshButton>
+        </CardHeader>
 
-      {/* Controlli */}
-      <div className='controls-section'>
-        <div className='filters'>
-          <span className='filter-label'>Filtro:</span>
-          <div className='filter-buttons'>
-            <button
-              className={`filter-button ${
-                activeFilter === 'all' ? 'active' : ''
-              }`}
-              onClick={() => setActiveFilter('all')}
-            >
-              Tutte
-            </button>
-            <button
-              className={`filter-button ${
-                activeFilter === 'critical' ? 'active' : ''
-              }`}
-              style={{ color: getSeverityColor('critical') }}
-              onClick={() => setActiveFilter('critical')}
-            >
-              Critiche
-            </button>
-            <button
-              className={`filter-button ${
-                activeFilter === 'high' ? 'active' : ''
-              }`}
-              style={{ color: getSeverityColor('high') }}
-              onClick={() => setActiveFilter('high')}
-            >
-              Alte
-            </button>
-            <button
-              className={`filter-button ${
-                activeFilter === 'medium' ? 'active' : ''
-              }`}
-              style={{ color: getSeverityColor('medium') }}
-              onClick={() => setActiveFilter('medium')}
-            >
-              Medie
-            </button>
-            <button
-              className={`filter-button ${
-                activeFilter === 'low' ? 'active' : ''
-              }`}
-              style={{ color: getSeverityColor('low') }}
-              onClick={() => setActiveFilter('low')}
-            >
-              Basse
-            </button>
-          </div>
-        </div>
-        <div className='time-range'>
-          <span className='time-label'>Periodo:</span>
-          <select
-            className='time-select'
-            value={timeRange}
-            onChange={(e) => setTimeRange(e.target.value)}
+        <StatsContainer>
+          <StatCard bgColor='#f3f7fe'>
+            <StatValue color='#3385ad'>{stats.total}</StatValue>
+            <StatLabel>Anomalie Totali</StatLabel>
+          </StatCard>
+          <StatCard bgColor='#fff8f7'>
+            <StatValue color='#f44336'>{stats.high}</StatValue>
+            <StatLabel>Alta Priorità</StatLabel>
+          </StatCard>
+          <StatCard bgColor='#fff8e1'>
+            <StatValue color='#ffc107'>{stats.medium}</StatValue>
+            <StatLabel>Media Priorità</StatLabel>
+          </StatCard>
+          <StatCard bgColor='#e8f5e9'>
+            <StatValue color='#4caf50'>{stats.low}</StatValue>
+            <StatLabel>Bassa Priorità</StatLabel>
+          </StatCard>
+          <StatCard bgColor='#f5f5f5'>
+            <StatValue color='#757575'>{stats.acknowledged}</StatValue>
+            <StatLabel>Riconosciute</StatLabel>
+          </StatCard>
+        </StatsContainer>
+
+        <FilterContainer>
+          <FilterButton
+            active={activeFilter === 'all'}
+            onClick={() => setActiveFilter('all')}
           >
-            <option value='1h'>Ultima ora</option>
-            <option value='6h'>Ultime 6 ore</option>
-            <option value='24h'>Ultime 24 ore</option>
-            <option value='7d'>Ultimi 7 giorni</option>
-          </select>
-        </div>
-        <button
-          className='detection-button'
-          onClick={handleStartDetection}
-          disabled={detectionRunning}
-        >
-          {detectionRunning ? (
-            <>
-              <RefreshCw className='button-icon spin' /> Rilevamento in corso...
-            </>
-          ) : (
-            <>
-              <Search className='button-icon' /> Avvia rilevamento anomalie
-            </>
-          )}
-        </button>
-      </div>
+            <Filter size={16} style={{ marginRight: '5px' }} />
+            Tutte
+          </FilterButton>
+          <FilterButton
+            active={activeFilter === 'high'}
+            onClick={() => setActiveFilter('high')}
+          >
+            <AlertTriangle
+              size={16}
+              style={{ marginRight: '5px' }}
+              color={activeFilter === 'high' ? 'white' : '#f44336'}
+            />
+            Alta Priorità
+          </FilterButton>
+          <FilterButton
+            active={activeFilter === 'medium'}
+            onClick={() => setActiveFilter('medium')}
+          >
+            <AlertTriangle
+              size={16}
+              style={{ marginRight: '5px' }}
+              color={activeFilter === 'medium' ? 'white' : '#ffc107'}
+            />
+            Media Priorità
+          </FilterButton>
+          <FilterButton
+            active={activeFilter === 'low'}
+            onClick={() => setActiveFilter('low')}
+          >
+            <AlertTriangle
+              size={16}
+              style={{ marginRight: '5px' }}
+              color={activeFilter === 'low' ? 'white' : '#4caf50'}
+            />
+            Bassa Priorità
+          </FilterButton>
+          <FilterButton
+            active={activeFilter === 'unacknowledged'}
+            onClick={() => setActiveFilter('unacknowledged')}
+          >
+            <Flag size={16} style={{ marginRight: '5px' }} />
+            Da Riconoscere
+          </FilterButton>
+        </FilterContainer>
 
-      {/* Lista anomalie */}
-      <div className='anomalies-list'>
-        {isLoading ? (
-          <div className='loading'>Caricamento anomalie in corso...</div>
-        ) : getFilteredAnomalies().length === 0 ? (
-          <div className='no-anomalies'>
-            Nessuna anomalia rilevata con i filtri selezionati
-          </div>
-        ) : (
-          getFilteredAnomalies().map((anomaly) => (
+        <AnomalyList>
+          {filteredAnomalies.length === 0 ? (
             <div
-              key={anomaly.id}
-              className={`anomaly-card ${anomaly.resolved ? 'resolved' : ''} ${
-                anomaly.acknowledged ? 'acknowledged' : ''
-              }`}
+              style={{ textAlign: 'center', padding: '20px', color: '#757575' }}
             >
-              <div className='anomaly-header'>
-                <div
-                  className='anomaly-severity'
-                  style={{
-                    backgroundColor: getSeverityColor(anomaly.severity),
-                  }}
-                >
-                  {anomaly.severity.toUpperCase()}
-                </div>
-                <div className='anomaly-time'>
-                  <Clock size={14} className='time-icon' />
-                  {anomaly.timestamp.toLocaleString()}
-                </div>
-              </div>
-              <div className='anomaly-content'>
-                <div className='anomaly-title-row'>
-                  {getAnomalyIcon(anomaly.type)}
-                  <span className='anomaly-type'>
-                    {anomaly.type.toUpperCase()}
-                  </span>
-                  <span className='anomaly-location'>{anomaly.location}</span>
-                </div>
-                <div className='anomaly-description'>{anomaly.description}</div>
-                <div className='anomaly-details'>
-                  <div className='anomaly-impact'>
-                    <strong>Impatto:</strong> {anomaly.impact}
-                  </div>
-                  <div className='anomaly-recommendation'>
-                    <strong>Raccomandazione:</strong> {anomaly.recommendation}
-                  </div>
-                </div>
-                <div className='anomaly-params'>
-                  {anomaly.relatedParams.map((param, idx) => (
-                    <span key={idx} className='param-tag'>
-                      {param}
-                    </span>
-                  ))}
-                </div>
-                <div className='anomaly-footer'>
-                  <div className='anomaly-confidence'>
-                    Confidenza AI: <strong>{anomaly.confidence}%</strong>
-                  </div>
-                  <div className='anomaly-actions'>
-                    <button className='action-button examine'>
-                      <Eye size={14} className='action-icon' /> Esamina
-                    </button>
-                    {!anomaly.acknowledged && !anomaly.resolved && (
-                      <button className='action-button acknowledge'>
-                        <Check size={14} className='action-icon' /> Gestisci
-                      </button>
-                    )}
-                    {anomaly.acknowledged && !anomaly.resolved && (
-                      <div className='status-badge acknowledged'>Gestita</div>
-                    )}
-                    {anomaly.resolved && (
-                      <div className='status-badge resolved'>Risolta</div>
-                    )}
-                  </div>
-                </div>
-              </div>
+              Nessuna anomalia trovata con i filtri correnti
             </div>
-          ))
-        )}
-      </div>
+          ) : (
+            filteredAnomalies.map((anomaly) => (
+              <AnomalyItem key={anomaly.id} severity={anomaly.severity}>
+                <AnomalyInfo>
+                  <AnomalyTitle>
+                    {renderSeverityIcon(anomaly.severity)}
+                    {anomaly.title} - {anomaly.location}
+                    {anomaly.acknowledged && (
+                      <span
+                        style={{
+                          marginLeft: '10px',
+                          fontSize: '12px',
+                          color: '#757575',
+                        }}
+                      >
+                        (Riconosciuta)
+                      </span>
+                    )}
+                  </AnomalyTitle>
+                  <AnomalyDescription>{anomaly.description}</AnomalyDescription>
+                  <AnomalyMeta>
+                    <AnomalyMetaItem>
+                      <Clock size={12} style={{ marginRight: '5px' }} />
+                      {formatTimestamp(anomaly.timestamp)}
+                    </AnomalyMetaItem>
+                    <AnomalyMetaItem>
+                      <BarChart2 size={12} style={{ marginRight: '5px' }} />
+                      Valore: {anomaly.value} (Soglia: {anomaly.threshold})
+                    </AnomalyMetaItem>
+                  </AnomalyMeta>
+                </AnomalyInfo>
+                <AnomalyActions>
+                  <ActionButton onClick={() => handleViewDetails(anomaly)}>
+                    <Eye size={16} style={{ marginRight: '5px' }} />
+                    Dettagli
+                  </ActionButton>
+                  {!anomaly.acknowledged && (
+                    <ActionButton
+                      onClick={() => handleAcknowledge(anomaly.id)}
+                      color='#4caf50'
+                      hoverColor='#388e3c'
+                    >
+                      <Check size={16} style={{ marginRight: '5px' }} />
+                      Riconosci
+                    </ActionButton>
+                  )}
+                  <ActionButton
+                    onClick={() => handleDismiss(anomaly.id)}
+                    color='#f44336'
+                    hoverColor='#d32f2f'
+                  >
+                    <X size={16} style={{ marginRight: '5px' }} />
+                    Ignora
+                  </ActionButton>
+                </AnomalyActions>
+              </AnomalyItem>
+            ))
+          )}
+        </AnomalyList>
+      </Card>
 
-      <style jsx>{`
-        .anomaly-detection-container {
-          font-family: Arial, sans-serif;
-          color: #333;
-          max-width: 1200px;
-          margin: 0 auto;
-          padding: 20px;
-        }
+      {selectedAnomaly && (
+        <Card>
+          <CardHeader>
+            <CardTitle>
+              <IconWrapper>
+                <BarChart2 />
+              </IconWrapper>
+              Dettagli Anomalia: {selectedAnomaly.title}
+            </CardTitle>
+          </CardHeader>
 
-        .anomaly-title {
-          font-size: 20px;
-          font-weight: bold;
-          margin-bottom: 5px;
-          display: flex;
-          align-items: center;
-        }
+          <div>
+            <div style={{ margin: '10px 0' }}>
+              <strong>Localizzazione:</strong> {selectedAnomaly.location}
+            </div>
+            <div style={{ margin: '10px 0' }}>
+              <strong>Severità:</strong>{' '}
+              <span
+                style={{ color: getSeverityColor(selectedAnomaly.severity) }}
+              >
+                {selectedAnomaly.severity === 'high'
+                  ? 'Alta'
+                  : selectedAnomaly.severity === 'medium'
+                  ? 'Media'
+                  : 'Bassa'}
+              </span>
+            </div>
+            <div style={{ margin: '10px 0' }}>
+              <strong>Rilevata:</strong>{' '}
+              {selectedAnomaly.timestamp.toLocaleString()}
+            </div>
+            <div style={{ margin: '10px 0' }}>
+              <strong>Stato:</strong>{' '}
+              {selectedAnomaly.acknowledged ? 'Riconosciuta' : 'Da riconoscere'}
+            </div>
+            <div style={{ margin: '10px 0' }}>
+              <strong>Descrizione:</strong> {selectedAnomaly.description}
+            </div>
 
-        .icon {
-          margin-right: 8px;
-        }
+            <ChartWrapper>
+              <ResponsiveContainer width='100%' height='100%'>
+                <LineChart data={chartData}>
+                  <CartesianGrid strokeDasharray='3 3' />
+                  <XAxis dataKey='time' />
+                  <YAxis domain={[0, 120]} />
+                  <Tooltip />
+                  <Line
+                    type='monotone'
+                    dataKey='value'
+                    stroke='#3385ad'
+                    strokeWidth={2}
+                    dot={false}
+                    activeDot={{ r: 8 }}
+                  />
+                  <Line
+                    type='monotone'
+                    dataKey='threshold'
+                    stroke='#ff9800'
+                    strokeWidth={2}
+                    strokeDasharray='5 5'
+                    dot={false}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </ChartWrapper>
 
-        .anomaly-description {
-          color: #666;
-          margin-bottom: 20px;
-          font-size: 14px;
-        }
-
-        .stats-section {
-          display: flex;
-          justify-content: space-between;
-          margin-bottom: 20px;
-          flex-wrap: wrap;
-        }
-
-        .stat-item {
-          flex: 1;
-          min-width: 120px;
-          background-color: #f8f9fa;
-          border-radius: 6px;
-          padding: 15px;
-          margin: 10px;
-          text-align: center;
-          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        }
-
-        .stat-value {
-          font-size: 22px;
-          font-weight: bold;
-          color: #1f2937;
-        }
-
-        .stat-label {
-          font-size: 12px;
-          color: #6b7280;
-          margin-top: 4px;
-        }
-
-        .controls-section {
-          display: flex;
-          flex-wrap: wrap;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 20px;
-        }
-
-        .filters,
-        .time-range {
-          margin: 10px 0;
-        }
-
-        .filter-label,
-        .time-label {
-          margin-right: 10px;
-          font-weight: 500;
-        }
-
-        .filter-buttons {
-          display: inline-flex;
-          gap: 6px;
-        }
-
-        .filter-button {
-          background: #e5e7eb;
-          border: none;
-          padding: 6px 10px;
-          border-radius: 4px;
-          cursor: pointer;
-          font-size: 13px;
-        }
-
-        .filter-button.active {
-          font-weight: bold;
-          background: #d1d5db;
-        }
-
-        .time-select {
-          padding: 6px 10px;
-          border-radius: 4px;
-          border: 1px solid #d1d5db;
-        }
-
-        .detection-button {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          background-color: #2563eb;
-          color: white;
-          padding: 8px 14px;
-          border: none;
-          border-radius: 6px;
-          cursor: pointer;
-          font-size: 14px;
-        }
-
-        .button-icon {
-          margin-right: 4px;
-        }
-
-        .spin {
-          animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-          0% {
-            transform: rotate(0deg);
-          }
-          100% {
-            transform: rotate(360deg);
-          }
-        }
-
-        .anomalies-list {
-          margin-top: 20px;
-        }
-
-        .anomaly-card {
-          background: #fff;
-          border: 1px solid #e5e7eb;
-          border-left: 6px solid #6b7280;
-          border-radius: 8px;
-          padding: 16px;
-          margin-bottom: 16px;
-          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-        }
-
-        .anomaly-card.resolved {
-          opacity: 0.6;
-        }
-
-        .anomaly-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 10px;
-        }
-
-        .anomaly-severity {
-          font-weight: bold;
-          padding: 4px 8px;
-          border-radius: 4px;
-          color: white;
-          font-size: 12px;
-        }
-
-        .anomaly-time {
-          display: flex;
-          align-items: center;
-          font-size: 12px;
-          color: #6b7280;
-        }
-
-        .time-icon {
-          margin-right: 4px;
-        }
-
-        .anomaly-content {
-          padding-left: 4px;
-        }
-
-        .anomaly-title-row {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          font-weight: 500;
-          margin-bottom: 8px;
-        }
-
-        .anomaly-type {
-          font-size: 14px;
-          color: #374151;
-        }
-
-        .anomaly-location {
-          font-size: 13px;
-          color: #6b7280;
-        }
-
-        .anomaly-description {
-          margin-bottom: 10px;
-          font-size: 14px;
-          color: #4b5563;
-        }
-
-        .anomaly-details {
-          font-size: 13px;
-          color: #374151;
-          margin-bottom: 10px;
-        }
-
-        .anomaly-params {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 6px;
-          margin-bottom: 12px;
-        }
-
-        .param-tag {
-          background: #f3f4f6;
-          padding: 4px 8px;
-          border-radius: 4px;
-          font-size: 12px;
-          color: #374151;
-        }
-
-        .anomaly-footer {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          font-size: 13px;
-        }
-
-        .anomaly-actions {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-        }
-
-        .action-button {
-          background: #e0e7ff;
-          color: #1e40af;
-          border: none;
-          padding: 4px 8px;
-          border-radius: 4px;
-          cursor: pointer;
-          display: flex;
-          align-items: center;
-          gap: 4px;
-        }
-
-        .status-badge {
-          font-size: 11px;
-          padding: 4px 6px;
-          border-radius: 4px;
-          font-weight: bold;
-        }
-
-        .status-badge.acknowledged {
-          background: #fef08a;
-          color: #92400e;
-        }
-
-        .status-badge.resolved {
-          background: #bbf7d0;
-          color: #166534;
-        }
-
-        .loading,
-        .no-anomalies {
-          text-align: center;
-          font-size: 14px;
-          color: #6b7280;
-          margin-top: 40px;
-        }
-      `}</style>
-    </div>
+            <div style={{ marginTop: '20px' }}>
+              <strong>Raccomandazioni AI:</strong>
+              <ul style={{ marginTop: '10px', paddingLeft: '20px' }}>
+                {selectedAnomaly.type === 'voltage' && (
+                  <>
+                    <li>
+                      Verificare gli impianti di regolazione della tensione
+                      nella sottostazione
+                    </li>
+                    <li>
+                      Controllare le batterie di condensatori e reattori shunt
+                    </li>
+                    <li>
+                      Monitorare i trasformatori con variatori sotto carico
+                    </li>
+                  </>
+                )}
+                {selectedAnomaly.type === 'frequency' && (
+                  <>
+                    <li>
+                      Verificare le riserve di regolazione primaria disponibili
+                    </li>
+                    <li>Controllare i sistemi di regolazione secondaria</li>
+                    <li>
+                      Considerare l'attivazione di contratti di interrompibilità
+                    </li>
+                  </>
+                )}
+                {selectedAnomaly.type === 'load' && (
+                  <>
+                    <li>
+                      Verificare la previsione di carico nelle prossime ore
+                    </li>
+                    <li>
+                      Controllare la disponibilità di risorse per il
+                      bilanciamento
+                    </li>
+                    <li>
+                      Preparare sistemi di alleggerimento carico se i valori
+                      continuano a salire
+                    </li>
+                  </>
+                )}
+                {selectedAnomaly.type === 'generation' && (
+                  <>
+                    <li>Verificare le previsioni meteo per le prossime ore</li>
+                    <li>Attivare riserve termoelettriche a rapida risposta</li>
+                    <li>Monitorare le interconnessioni transfrontaliere</li>
+                  </>
+                )}
+                {selectedAnomaly.type === 'transformer' && (
+                  <>
+                    <li>
+                      Verificare i sistemi di raffreddamento del trasformatore
+                    </li>
+                    <li>
+                      Controllare i carichi dell'area servita dal trasformatore
+                    </li>
+                    <li>Predisporre trasformatori di riserva se disponibili</li>
+                  </>
+                )}
+                {selectedAnomaly.type === 'line' && (
+                  <>
+                    <li>
+                      Verificare possibili ridispacciamenti per ridurre il
+                      flusso sulla linea
+                    </li>
+                    <li>Controllare le condizioni meteorologiche locali</li>
+                    <li>
+                      Monitorare le temperature dei conduttori in tempo reale
+                    </li>
+                  </>
+                )}
+              </ul>
+            </div>
+          </div>
+        </Card>
+      )}
+    </Container>
   );
 };
 

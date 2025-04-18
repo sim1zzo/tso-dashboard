@@ -1,650 +1,395 @@
 import React, { useState, useRef, useEffect } from 'react';
-import {
-  TrendingUp,
-  AlertTriangle,
-  BarChart2,
-  Send,
-  Wind,
-  Database,
-  Zap,
-  Search,
-  ExternalLink,
-  ChevronRight,
-} from 'lucide-react';
+import { Cpu, Send, Zap, Wifi, AlertTriangle, BarChart2, Wind, Database, CheckCircle } from 'lucide-react';
+import styled from 'styled-components';
 
+// Styled components
+const AssistantContainer = styled.div`
+  padding: 20px;
+  background-color: #f0f0f0;
+  font-family: Arial, sans-serif;
+`;
+
+const HeaderSection = styled.div`
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+`;
+
+const HeaderIcon = styled.div`
+  margin-right: 15px;
+  color: #3385ad;
+`;
+
+const MainTitle = styled.h2`
+  font-size: 24px;
+  font-weight: bold;
+  margin: 0;
+  color: #333;
+`;
+
+const Card = styled.div`
+  background-color: white;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+`;
+
+const SectionTitle = styled.h3`
+  font-size: 18px;
+  margin-top: 0;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  color: #333;
+`;
+
+const ChatContainer = styled.div`
+  height: 400px;
+  overflow-y: auto;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  padding: 15px;
+  margin-bottom: 15px;
+  background-color: #f8f9fa;
+`;
+
+const MessageContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 15px;
+`;
+
+const MessageBubble = styled.div`
+  max-width: 80%;
+  padding: 10px 15px;
+  border-radius: 18px;
+  margin-bottom: 5px;
+  align-self: ${props => props.sender === 'user' ? 'flex-end' : 'flex-start'};
+  background-color: ${props => props.sender === 'user' ? '#dcf8c6' : '#fff'};
+  border: ${props => props.sender === 'user' ? 'none' : '1px solid #e0e0e0'};
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+`;
+
+const MessageTime = styled.div`
+  font-size: 12px;
+  color: #999;
+  align-self: ${props => props.sender === 'user' ? 'flex-end' : 'flex-start'};
+  margin: 0 5px;
+`;
+
+const InputContainer = styled.div`
+  display: flex;
+`;
+
+const Input = styled.input`
+  flex: 1;
+  padding: 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  font-size: 16px;
+  margin-right: 10px;
+`;
+
+const SendButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #3385ad;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 0 20px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: #286d8e;
+  }
+`;
+
+const StatusContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+`;
+
+const StatusCard = styled.div`
+  flex: 1;
+  background-color: ${props => props.color || '#f8f9fa'};
+  padding: 15px;
+  border-radius: 8px;
+  margin: 0 5px;
+  color: ${props => props.textColor || '#333'};
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+`;
+
+const StatusTitle = styled.div`
+  font-size: 14px;
+  margin-bottom: 5px;
+`;
+
+const StatusValue = styled.div`
+  font-size: 24px;
+  font-weight: bold;
+`;
+
+const CapabilityGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 15px;
+  margin-top: 15px;
+`;
+
+const CapabilityItem = styled.div`
+  background-color: #f8f9fa;
+  padding: 15px;
+  border-radius: 8px;
+  border-left: 4px solid ${props => props.color || '#3385ad'};
+  display: flex;
+  align-items: center;
+`;
+
+const CapabilityIcon = styled.div`
+  margin-right: 10px;
+  color: ${props => props.color || '#3385ad'};
+`;
+
+const CapabilityText = styled.div`
+  font-size: 14px;
+`;
+
+// Mockup data for the intelligent grid assistant
+const INITIAL_MESSAGES = [
+  { 
+    id: 1, 
+    text: "Benvenuto nel sistema di Assistenza Intelligente alla Gestione della Rete. Come posso assisterti oggi?", 
+    sender: 'assistant', 
+    timestamp: new Date().toLocaleTimeString() 
+  }
+];
+
+// Example grid status data
+const GRID_STATUS = {
+  networkStability: 98.5,
+  congestionLevel: 15,
+  renewableIntegration: 42,
+  loadBalance: 94
+};
+
+// AI capabilities
+const AI_CAPABILITIES = [
+  { id: 1, name: 'Previsione della domanda', icon: <BarChart2 />, color: '#4caf50' },
+  { id: 2, name: 'Rilevamento anomalie', icon: <AlertTriangle />, color: '#f44336' },
+  { id: 3, name: 'Gestione congestioni', icon: <Zap />, color: '#ff9800' },
+  { id: 4, name: 'Integrazione rinnovabili', icon: <Wind />, color: '#2196f3' },
+  { id: 5, name: 'Analisi storica', icon: <Database />, color: '#9c27b0' },
+  { id: 6, name: 'Monitoraggio connessioni', icon: <Wifi />, color: '#607d8b' }
+];
+
+/**
+ * AIGridAssistant component provides an AI-powered interface for grid operators
+ * to interact with and get insights about the transmission system
+ */
 const AIGridAssistant = () => {
-  const [messages, setMessages] = useState([
-    {
-      role: 'assistant',
-      content: 'Ciao, sono il tuo Assistente AI per la Gestione della Rete. Come posso aiutarti oggi con la gestione della rete elettrica?',
-    },
-  ]);
+  const [messages, setMessages] = useState(INITIAL_MESSAGES);
   const [input, setInput] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const chatEndRef = useRef(null);
-  const [showSuggestions, setShowSuggestions] = useState(true);
+  const [gridStatus, setGridStatus] = useState(GRID_STATUS);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const chatContainerRef = useRef(null);
 
-  // Metriche statiche
-  const metrics = {
-    networkStability: 97,
-    renewablePenetration: 42,
-    congestionProbability: 15,
-    demandForecastAccuracy: 98.2
-  };
-
-  // Suggerimenti predefiniti
-  const suggestions = [
-    'Analizza il rischio di congestione sulla linea Milano-Torino nelle prossime 3 ore',
-    'Suggerisci la migliore strategia di dispacciamento considerando le previsioni meteo',
-    "Calcola l'impatto della manutenzione programmata sulla sottostazione Roma Nord",
-    'Quali sono le zone a rischio blackout nelle prossime 24 ore?'
-  ];
-
-  // Knowledge base
-  const knowledgeBase = [
-    { title: 'Dati in tempo reale', description: 'Integrazione con SCADA e PMU' },
-    { title: 'Previsioni meteo', description: '48 ore, risoluzione 15 min' },
-    { title: 'Modelli di rete', description: 'CIM 16v29a, aggiornato 1h fa' },
-    { title: 'Storico eventi', description: '5 anni di dati operativi' }
-  ];
-
+  // Automatically scroll to the bottom of the chat
   useEffect(() => {
-    // Scroll al fondo della chat quando arrivano nuovi messaggi
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
   }, [messages]);
 
-  // Funzione per gestire la risposta simulata dell'assistente
-  const getSimulatedResponse = (query) => {
-    const normalizedQuery = query.toLowerCase();
+  // Simulates grid status updates
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setGridStatus(prevStatus => ({
+        networkStability: Math.min(100, prevStatus.networkStability + (Math.random() - 0.5) * 2),
+        congestionLevel: Math.max(0, Math.min(100, prevStatus.congestionLevel + (Math.random() - 0.5) * 5)),
+        renewableIntegration: Math.max(0, Math.min(100, prevStatus.renewableIntegration + (Math.random() - 0.5) * 3)),
+        loadBalance: Math.max(0, Math.min(100, prevStatus.loadBalance + (Math.random() - 0.5) * 4))
+      }));
+    }, 10000);
+    
+    return () => clearInterval(interval);
+  }, []);
 
-    if (normalizedQuery.includes('congestione') || normalizedQuery.includes('milano')) {
-      return "Analisi completata. Il rischio di congestione sulla linea Milano-Torino nelle prossime 3 ore è moderato (35%). Fattori principali: alta produzione eolica prevista (450 MW) nel Nord-Ovest con domanda inferiore alle medie stagionali. Consiglio: monitorare il flusso e prepararsi a riconfiguare il dispacciamento se supera l'85% della capacità.";
-    } else if (normalizedQuery.includes('dispacciamento') || normalizedQuery.includes('meteo')) {
-      return "In base alle previsioni meteo delle prossime 24 ore (forti venti nel Sud, irradiazione solare elevata al Centro), raccomando di: 1) Aumentare la riserva rotante del 10% a partire dalle 14:00, 2) Ridurre la generazione termoelettrica nel Sud di circa 500 MW gradualmente dalle 12:00 alle 16:00, 3) Preparare le unità idroelettriche di Presenzano per compensazione rapida.";
-    } else if (normalizedQuery.includes('manutenzione') || normalizedQuery.includes('roma')) {
-      return "L'impatto della manutenzione programmata sulla sottostazione Roma Nord causerà una riduzione della capacità di trasferimento Nord-Centro di circa 800 MW per 6 ore. Suggerisco di: 1) Attivare le unità di riserva nell'area di Roma dalle 09:00, 2) Ridurre l'export verso la Grecia di 300 MW durante la manutenzione, 3) Posticipare la manutenzione di altri asset nella stessa area nelle prossime 72 ore.";
-    } else if (normalizedQuery.includes('blackout') || normalizedQuery.includes('rischio')) {
-      return "Analisi del rischio blackout completata. Le zone a maggior rischio nelle prossime 24 ore sono: 1) Area metropolitana di Napoli (indice di rischio: 0.32) a causa dell'ondata di calore prevista e conseguente aumento dei carichi di condizionamento, 2) Area di Palermo (indice di rischio: 0.28) per la limitata capacità di interconnessione durante il picco serale. Consiglio: attivare il piano di riduzione volontaria dei carichi industriali a Napoli dalle 14:00 alle 18:00.";
-    } else if (normalizedQuery.includes('previsione') || normalizedQuery.includes('domanda')) {
-      return "Ho analizzato i dati storici e le previsioni meteo per le prossime 48 ore. La domanda di energia prevista raggiungerà un picco di 47.2 GW domani alle 18:00, principalmente guidata da temperature elevate nelle regioni centrali e meridionali. Suggerisco di aumentare la capacità di riserva terziaria nella fascia oraria 16:00-20:00 e di predisporre l'attivazione degli accordi di interruzione con l'industria dell'acciaio.";
-    } else if (normalizedQuery.includes('rinnovabili') || normalizedQuery.includes('solare')) {
-      return "Basandomi sulle previsioni meteo, stimo una produzione solare di 12.3 GW alle ore 12:00 di domani, concentrata principalmente in Puglia e Sicilia. La produzione eolica notturna sarà significativa, con circa 4.8 GW nelle ore 22:00-02:00. Per gestire al meglio queste fonti, consiglio di preparare le unità di pompaggio idroelettrico per l'accumulo durante le ore di picco della produzione solare, e di ridurre il carico programmato delle unità termiche a carbone nelle stesse ore.";
-    } else if (normalizedQuery.includes('linea') || normalizedQuery.includes('flusso')) {
-      return "La linea ad alta tensione Milano-Bologna sta attualmente operando all'87% della sua capacità nominale. Con le attuali condizioni meteo, raccomando di non superare il 92% per mantenere un adeguato margine di sicurezza. Ho analizzato la possibilità di redistribuire i flussi di potenza utilizzando il controllo degli angoli di fase nei nodi di Roma Nord e Firenze Sud, con un potenziale miglioramento del 7-9% nei margini di sicurezza.";
-    } else {
-      return "Ho analizzato la tua richiesta ma necessito di maggiori dettagli per fornirti un'analisi precisa. Puoi specificare quale area geografica, linea o sottostazione ti interessa? Oppure puoi chiedermi informazioni su previsioni della domanda, integrazione delle rinnovabili, congestioni di rete o ottimizzazione del dispacciamento.";
+  // Handle sending a message
+  const handleSendMessage = () => {
+    if (!input.trim()) return;
+    
+    // Add user message
+    const userMessage = {
+      id: messages.length + 1,
+      text: input,
+      sender: 'user',
+      timestamp: new Date().toLocaleTimeString()
+    };
+    
+    setMessages(prev => [...prev, userMessage]);
+    setInput('');
+    setIsProcessing(true);
+    
+    // Simulate AI processing
+    setTimeout(() => {
+      const response = generateAIResponse(input);
+      
+      const assistantMessage = {
+        id: messages.length + 2,
+        text: response,
+        sender: 'assistant',
+        timestamp: new Date().toLocaleTimeString()
+      };
+      
+      setMessages(prev => [...prev, assistantMessage]);
+      setIsProcessing(false);
+    }, 1500);
+  };
+
+  // Handle pressing Enter key
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter' && !isProcessing) {
+      handleSendMessage();
     }
   };
 
-  // Gestione dell'invio del messaggio
-  const handleSend = () => {
-    if (input.trim() === '') return;
-
-    // Aggiungi messaggio utente
-    setMessages((prev) => [...prev, { role: 'user', content: input }]);
-    setIsLoading(true);
-    setShowSuggestions(false);
-
-    // Simula ritardo API
-    setTimeout(() => {
-      const responseContent = getSimulatedResponse(input);
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: 'assistant',
-          content: responseContent
-        }
-      ]);
-      setIsLoading(false);
-    }, 1000);
-
-    setInput('');
-  };
-
-  // Gestione click sui suggerimenti
-  const handleSuggestionClick = (suggestion) => {
-    setInput(suggestion);
+  // Generate AI response based on input (mockup)
+  const generateAIResponse = (input) => {
+    const lowerInput = input.toLowerCase();
+    
+    if (lowerInput.includes('congestione') || lowerInput.includes('congestion')) {
+      return `Attualmente, il livello di congestione della rete è al ${gridStatus.congestionLevel.toFixed(1)}%. Le aree più critiche sono la linea Milano-Torino (85% di carico) e il nodo di Roma Nord (78% di carico). Consiglio un ridispacciamento dell'energia dalla centrale di Montalto di Castro per ridurre il carico.`;
+    }
+    
+    if (lowerInput.includes('rinnovabil') || lowerInput.includes('renewable') || lowerInput.includes('solar') || lowerInput.includes('wind') || lowerInput.includes('solare') || lowerInput.includes('eolic')) {
+      return `L'integrazione di energie rinnovabili è attualmente al ${gridStatus.renewableIntegration.toFixed(1)}% della produzione totale. Le previsioni meteo indicano un aumento della produzione eolica nelle prossime 6 ore nella regione Sud, permettendo potenzialmente di raggiungere il 45%.`;
+    }
+    
+    if (lowerInput.includes('stabilità') || lowerInput.includes('stability')) {
+      return `La stabilità della rete è attualmente ${gridStatus.networkStability.toFixed(1)}%, che è nell'intervallo ottimale. Tutti i parametri di frequenza sono nella norma (50.02 Hz) e non ci sono oscillazioni significative. I margini di stabilità transitoria sono sufficienti per gestire eventuali contingenze N-1.`;
+    }
+    
+    if (lowerInput.includes('domanda') || lowerInput.includes('carico') || lowerInput.includes('demand') || lowerInput.includes('load')) {
+      return `La domanda attuale è di 32.450 MW, con un bilanciamento del carico al ${gridStatus.loadBalance.toFixed(1)}%. Si prevede un picco di 34.800 MW alle ore 19:00. Consiglio di preparare le riserve per gestire il ramping serale.`;
+    }
+    
+    if (lowerInput.includes('previsione') || lowerInput.includes('forecast')) {
+      return `Le previsioni per le prossime 24 ore indicano: un picco di domanda di 34.800 MW alle 19:00, produzione rinnovabile in aumento fino al 48% nelle ore centrali della giornata, e nessuna congestione critica prevista. Il margine di riserva rimarrà sopra il 10% durante tutto il periodo.`;
+    }
+    
+    if (lowerInput.includes('anomalia') || lowerInput.includes('anomaly') || lowerInput.includes('allarme') || lowerInput.includes('alarm')) {
+      return `Non ci sono anomalie critiche al momento. Ho rilevato alcune piccole deviazioni di tensione nella sottostazione di Bologna Ovest (±5% rispetto al nominale), ma sono all'interno dei limiti operativi. Continuerò a monitorare la situazione.`;
+    }
+    
+    // Default response
+    return `Ho analizzato la tua richiesta riguardo "${input}". Sulla base dei dati attuali della rete, la stabilità è al ${gridStatus.networkStability.toFixed(1)}%, l'integrazione rinnovabile è al ${gridStatus.renewableIntegration.toFixed(1)}%, e il livello di congestione è al ${gridStatus.congestionLevel.toFixed(1)}%. Posso fornirti analisi più dettagliate se specifichi un aspetto particolare della rete.`;
   };
 
   return (
-    <div className="modern-assistant">
-      <div className="assistant-header">
-        <div className="header-content">
-          <h2 className="assistant-title">
-            <Zap size={20} className="title-icon" />
-            Assistente AI per la Gestione della Rete
-          </h2>
-          <p className="assistant-subtitle">
-            Sistema di supporto decisionale basato su intelligenza artificiale
-          </p>
-        </div>
-      </div>
-
-      <div className="assistant-content">
-        <div className="main-content">
-          {/* Metrics Row */}
-          <div className="metrics-row">
-            <div className="metric">
-              <TrendingUp size={16} className="metric-icon" />
-              <div className="metric-data">
-                <div className="metric-value">{metrics.networkStability}%</div>
-                <div className="metric-label">Stabilità Rete</div>
-              </div>
-            </div>
-            
-            <div className="metric">
-              <Wind size={16} className="metric-icon renewable" />
-              <div className="metric-data">
-                <div className="metric-value">{metrics.renewablePenetration}%</div>
-                <div className="metric-label">Penetrazione Rinnovabili</div>
-              </div>
-            </div>
-            
-            <div className="metric">
-              <AlertTriangle size={16} className="metric-icon warning" />
-              <div className="metric-data">
-                <div className="metric-value">{metrics.congestionProbability}%</div>
-                <div className="metric-label">Probabilità Congestione</div>
-              </div>
-            </div>
-            
-            <div className="metric">
-              <BarChart2 size={16} className="metric-icon accuracy" />
-              <div className="metric-data">
-                <div className="metric-value">{metrics.demandForecastAccuracy}%</div>
-                <div className="metric-label">Accuratezza Previsioni</div>
-              </div>
-            </div>
-          </div>
-
-          {/* Conversation Area */}
-          <div className="conversation-area">
-            <div className="messages">
-              {messages.map((message, index) => (
-                <div key={index} className={`message ${message.role}`}>
-                  <div className="message-content">{message.content}</div>
-                </div>
-              ))}
-              {isLoading && (
-                <div className="loading-indicator">
-                  <div className="dot"></div>
-                  <div className="dot"></div>
-                  <div className="dot"></div>
-                </div>
-              )}
-              <div ref={chatEndRef} />
-            </div>
-
-            <div className="input-area">
-              <input
-                type="text"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-                placeholder="Fai una domanda sulla gestione della rete..."
-                className="input-field"
-              />
-              <button 
-                onClick={handleSend}
-                disabled={isLoading || input.trim() === ''}
-                className="send-button"
-              >
-                <Send size={16} />
-              </button>
-            </div>
-          </div>
-
-          {/* Suggestions Area - Only shown when no conversation has started */}
-          {showSuggestions && suggestions.length > 0 && (
-            <div className="suggestions-area">
-              <h3 className="suggestions-title">Domande suggerite</h3>
-              <div className="suggestions-list">
-                {suggestions.map((suggestion, index) => (
-                  <button 
-                    key={index}
-                    className="suggestion-button"
-                    onClick={() => handleSuggestionClick(suggestion)}
-                  >
-                    <span className="suggestion-text">{suggestion}</span>
-                    <ChevronRight size={16} className="suggestion-icon" />
-                  </button>
-                ))}
-              </div>
-            </div>
+    <AssistantContainer>
+      <HeaderSection>
+        <HeaderIcon>
+          <Cpu size={32} />
+        </HeaderIcon>
+        <MainTitle>Assistente IA Grid - Supporto Operativo</MainTitle>
+      </HeaderSection>
+      
+      <Card>
+        <SectionTitle>
+          <CheckCircle size={20} style={{ marginRight: '10px' }} />
+          Stato Attuale del Sistema
+        </SectionTitle>
+        
+        <StatusContainer>
+          <StatusCard color="#e8f5e9" textColor="#2e7d32">
+            <StatusTitle>Stabilità Rete</StatusTitle>
+            <StatusValue>{gridStatus.networkStability.toFixed(1)}%</StatusValue>
+          </StatusCard>
+          
+          <StatusCard color="#fbe9e7" textColor="#d84315">
+            <StatusTitle>Livello Congestione</StatusTitle>
+            <StatusValue>{gridStatus.congestionLevel.toFixed(1)}%</StatusValue>
+          </StatusCard>
+          
+          <StatusCard color="#e3f2fd" textColor="#1565c0">
+            <StatusTitle>Integrazione Rinnovabili</StatusTitle>
+            <StatusValue>{gridStatus.renewableIntegration.toFixed(1)}%</StatusValue>
+          </StatusCard>
+          
+          <StatusCard color="#edeef8" textColor="#3f51b5">
+            <StatusTitle>Bilanciamento Carico</StatusTitle>
+            <StatusValue>{gridStatus.loadBalance.toFixed(1)}%</StatusValue>
+          </StatusCard>
+        </StatusContainer>
+      </Card>
+      
+      <Card>
+        <SectionTitle>
+          <Cpu size={20} style={{ marginRight: '10px' }} />
+          Assistente Intelligente
+        </SectionTitle>
+        
+        <ChatContainer ref={chatContainerRef}>
+          {messages.map(message => (
+            <MessageContainer key={message.id}>
+              <MessageBubble sender={message.sender}>
+                {message.text}
+              </MessageBubble>
+              <MessageTime sender={message.sender}>{message.timestamp}</MessageTime>
+            </MessageContainer>
+          ))}
+          {isProcessing && (
+            <MessageContainer>
+              <MessageBubble sender="assistant">
+                <div>Analisi in corso...</div>
+              </MessageBubble>
+            </MessageContainer>
           )}
-        </div>
-
-        {/* Sidebar with Knowledge Base */}
-        <div className="knowledge-sidebar">
-          <div className="knowledge-header">
-            <Database size={16} />
-            <h3>Knowledge Base</h3>
-          </div>
-          
-          <div className="knowledge-items">
-            {knowledgeBase.map((item, index) => (
-              <div key={index} className="knowledge-item">
-                <h4 className="knowledge-title">{item.title}</h4>
-                <p className="knowledge-description">{item.description}</p>
-              </div>
-            ))}
-          </div>
-          
-          <button className="advanced-search-button">
-            <Search size={14} />
-            <span>Ricerca avanzata</span>
-          </button>
-          
-          <div className="external-links">
-            <a href="#" className="external-link">
-              <ExternalLink size={14} />
-              <span>Dashboard operativa</span>
-            </a>
-            <a href="#" className="external-link">
-              <ExternalLink size={14} />
-              <span>Previsioni meteo</span>
-            </a>
-            <a href="#" className="external-link">
-              <ExternalLink size={14} />
-              <span>Analisi avanzate</span>
-            </a>
-          </div>
-        </div>
-      </div>
-
-      <style jsx>{`
-        .modern-assistant {
-          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-          color: #333;
-          background-color: #f8f9fa;
-          border-radius: 10px;
-          overflow: hidden;
-          box-shadow: 0 5px 15px rgba(0,0,0,0.08);
-          max-width: 1200px;
-          margin: 0 auto;
-        }
-
-        .assistant-header {
-          background: linear-gradient(135deg, #2563eb, #1e40af);
-          color: white;
-          padding: 16px 24px;
-        }
-
-        .header-content {
-          max-width: 1200px;
-          margin: 0 auto;
-        }
-
-        .assistant-title {
-          font-size: 20px;
-          font-weight: 600;
-          margin: 0;
-          display: flex;
-          align-items: center;
-        }
-
-        .title-icon {
-          margin-right: 10px;
-        }
-
-        .assistant-subtitle {
-          margin: 5px 0 0;
-          font-size: 14px;
-          opacity: 0.8;
-        }
-
-        .assistant-content {
-          display: flex;
-          background-color: white;
-        }
-
-        .main-content {
-          flex: 1;
-          padding: 20px;
-          display: flex;
-          flex-direction: column;
-        }
-
-        .metrics-row {
-          display: flex;
-          justify-content: space-between;
-          margin-bottom: 20px;
-          flex-wrap: wrap;
-        }
-
-        .metric {
-          background-color: #f8fafc;
-          border-radius: 8px;
-          padding: 12px;
-          flex: 1;
-          min-width: 120px;
-          margin-right: 10px;
-          display: flex;
-          align-items: center;
-          box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        }
-
-        .metric:last-child {
-          margin-right: 0;
-        }
-
-        .metric-icon {
-          color: #3b82f6;
-          margin-right: 10px;
-        }
-
-        .metric-icon.renewable {
-          color: #10b981;
-        }
-
-        .metric-icon.warning {
-          color: #f59e0b;
-        }
-
-        .metric-icon.accuracy {
-          color: #8b5cf6;
-        }
-
-        .metric-data {
-          display: flex;
-          flex-direction: column;
-        }
-
-        .metric-value {
-          font-size: 18px;
-          font-weight: 600;
-        }
-
-        .metric-label {
-          font-size: 12px;
-          color: #64748b;
-        }
-
-        .conversation-area {
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-          background-color: #f8fafc;
-          border-radius: 8px;
-          overflow: hidden;
-          box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        }
-
-        .messages {
-          flex: 1;
-          padding: 16px;
-          overflow-y: auto;
-          min-height: 300px;
-          max-height: 400px;
-        }
-
-        .message {
-          margin-bottom: 16px;
-          max-width: 80%;
-          clear: both;
-        }
-
-        .message.user {
-          float: right;
-        }
-
-        .message.assistant {
-          float: left;
-        }
-
-        .message-content {
-          padding: 12px 16px;
-          border-radius: 18px;
-          font-size: 14px;
-          line-height: 1.5;
-          white-space: pre-wrap;
-        }
-
-        .message.user .message-content {
-          background-color: #2563eb;
-          color: white;
-          border-bottom-right-radius: 4px;
-        }
-
-        .message.assistant .message-content {
-          background-color: #e2e8f0;
-          color: #334155;
-          border-bottom-left-radius: 4px;
-        }
-
-        .loading-indicator {
-          display: flex;
-          width: 60px;
-          justify-content: space-between;
-          padding: 12px;
-          background-color: #e2e8f0;
-          border-radius: 18px;
-          margin-bottom: 16px;
-          border-bottom-left-radius: 4px;
-        }
-
-        .dot {
-          width: 8px;
-          height: 8px;
-          background-color: #94a3b8;
-          border-radius: 50%;
-          animation: bounce 1.4s infinite ease-in-out both;
-        }
-
-        .dot:nth-child(1) {
-          animation-delay: -0.32s;
-        }
-
-        .dot:nth-child(2) {
-          animation-delay: -0.16s;
-        }
-
-        @keyframes bounce {
-          0%, 80%, 100% { 
-            transform: scale(0);
-          } 40% { 
-            transform: scale(1.0);
-          }
-        }
-
-        .input-area {
-          display: flex;
-          padding: 12px;
-          background-color: white;
-          border-top: 1px solid #e2e8f0;
-        }
-
-        .input-field {
-          flex: 1;
-          padding: 12px 16px;
-          border: 1px solid #cbd5e1;
-          border-radius: 24px;
-          font-size: 14px;
-          outline: none;
-          transition: border-color 0.2s;
-        }
-
-        .input-field:focus {
-          border-color: #2563eb;
-        }
-
-        .send-button {
-          margin-left: 10px;
-          width: 40px;
-          height: 40px;
-          border: none;
-          border-radius: 50%;
-          background-color: #2563eb;
-          color: white;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          transition: background-color 0.2s;
-        }
-
-        .send-button:hover {
-          background-color: #1d4ed8;
-        }
-
-        .send-button:disabled {
-          background-color: #94a3b8;
-          cursor: not-allowed;
-        }
-
-        .suggestions-area {
-          margin-top: 20px;
-        }
-
-        .suggestions-title {
-          font-size: 14px;
-          color: #64748b;
-          margin-bottom: 10px;
-        }
-
-        .suggestions-list {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-          gap: 10px;
-        }
-
-        .suggestion-button {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: 12px 16px;
-          background-color: #f1f5f9;
-          border: 1px solid #e2e8f0;
-          border-radius: 8px;
-          font-size: 14px;
-          text-align: left;
-          cursor: pointer;
-          transition: background-color 0.2s;
-          color: #334155;
-        }
-
-        .suggestion-button:hover {
-          background-color: #e2e8f0;
-        }
-
-        .suggestion-text {
-          flex: 1;
-          margin-right: 10px;
-        }
-
-        .suggestion-icon {
-          color: #64748b;
-          flex-shrink: 0;
-        }
-
-        .knowledge-sidebar {
-          width: 280px;
-          padding: 20px;
-          background-color: #f8fafc;
-          border-left: 1px solid #e2e8f0;
-          display: flex;
-          flex-direction: column;
-        }
-
-        .knowledge-header {
-          display: flex;
-          align-items: center;
-          margin-bottom: 16px;
-          color: #334155;
-        }
-
-        .knowledge-header h3 {
-          margin: 0 0 0 8px;
-          font-size: 16px;
-        }
-
-        .knowledge-items {
-          flex: 1;
-        }
-
-        .knowledge-item {
-          padding: 12px;
-          background-color: white;
-          border-radius: 8px;
-          margin-bottom: 10px;
-          border: 1px solid #e2e8f0;
-        }
-
-        .knowledge-title {
-          margin: 0 0 5px 0;
-          font-size: 14px;
-          color: #334155;
-        }
-
-        .knowledge-description {
-          margin: 0;
-          font-size: 12px;
-          color: #64748b;
-        }
-
-        .advanced-search-button {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 10px;
-          margin: 16px 0;
-          background-color: white;
-          border: 1px solid #cbd5e1;
-          border-radius: 8px;
-          color: #334155;
-          font-size: 14px;
-          cursor: pointer;
-          transition: background-color 0.2s;
-        }
-
-        .advanced-search-button:hover {
-          background-color: #f1f5f9;
-        }
-
-        .advanced-search-button svg {
-          margin-right: 8px;
-        }
-
-        .external-links {
-          margin-top: auto;
-        }
-
-        .external-link {
-          display: flex;
-          align-items: center;
-          padding: 8px 0;
-          color: #2563eb;
-          font-size: 14px;
-          text-decoration: none;
-        }
-
-        .external-link:hover {
-          text-decoration: underline;
-        }
-
-        .external-link svg {
-          margin-right: 8px;
-          font-size: 12px;
-        }
-
-        /* Responsive design */
-        @media (max-width: 768px) {
-          .assistant-content {
-            flex-direction: column;
-          }
-
-          .knowledge-sidebar {
-            width: auto;
-            border-left: none;
-            border-top: 1px solid #e2e8f0;
-          }
-
-          .metric {
-            margin-bottom: 10px;
-          }
-        }
-      `}</style>
-    </div>
+        </ChatContainer>
+        
+        <InputContainer>
+          <Input
+            type="text"
+            placeholder="Fai una domanda sulla rete..."
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyPress={handleKeyPress}
+            disabled={isProcessing}
+          />
+          <SendButton onClick={handleSendMessage} disabled={isProcessing}>
+            <Send size={18} style={{ marginRight: '5px' }} />
+            Invia
+          </SendButton>
+        </InputContainer>
+      </Card>
+      
+      <Card>
+        <SectionTitle>
+          <Zap size={20} style={{ marginRight: '10px' }} />
+          Capacità dell'Assistente IA
+        </SectionTitle>
+        
+        <CapabilityGrid>
+          {AI_CAPABILITIES.map(capability => (
+            <CapabilityItem key={capability.id} color={capability.color}>
+              <CapabilityIcon color={capability.color}>
+                {capability.icon}
+              </CapabilityIcon>
+              <CapabilityText>{capability.name}</CapabilityText>
+            </CapabilityItem>
+          ))}
+        </CapabilityGrid>
+      </Card>
+    </AssistantContainer>
   );
 };
 
