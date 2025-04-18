@@ -1,0 +1,51 @@
+/* AnalysisHub.css */
+
+.hub-container {
+  font-family: Arial, sans-serif;
+  padding: 0;
+  background-color: #fff;
+}
+
+.hub-container h1 {
+  font-size: 24px;
+  font-weight: bold;
+  color: #333;
+  margin: 0;
+  padding: 15px 20px;
+}
+
+.tab-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.tab-row {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.tab-button {
+  padding: 8px 16px;
+  margin: 2px;
+  border: none;
+  background-color: #f0f0f0;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  white-space: nowrap;
+}
+
+.tab-button:hover {
+  background-color: #e0e0e0;
+}
+
+.tab-button.active {
+  background-color: #0d6efd;
+  color: white;
+}
+
+.content-area {
+  padding: 20px;
+  border-top: 1px solid #e0e0e0;
+  margin-top: 10px;
+}

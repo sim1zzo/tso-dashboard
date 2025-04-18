@@ -1,141 +1,132 @@
 import React, { useState } from 'react';
-import {
-  Brain,
-  AlertTriangle,
-  Activity,
-  Target,
-  Wrench,
-  TrendingUp,
-} from 'lucide-react';
+import './AnalysisHub.css';
+
+// Importazione dei componenti per ciascun tab
 import DemandForecast from './analysis/DemandForecast';
+import DispatchOptimization from './analysis/DispatchOptimization';
 import PredictiveMaintenance from './analysis/PredictiveMaintenance';
 import NetworkStability from './analysis/NetworkStability';
 import CongestionManagement from './analysis/CongestionManagement';
-import AIGridAssistant from './analysis/AIGridAssistant';
+import VirtualAssistant from './analysis/VirtualAssistant';
+import CyberSecurity from './analysis/CyberSecurity';
+import RenewableIntegration from './analysis/RenewableIntegration';
+import WhatIfSimulation from './analysis/WhatIfSimulation';
+import N1SecurityAnalysis from './analysis/N1SecurityAnalysis';
+import InterconnectionMonitoring from './analysis/InterconnectionMonitoring';
 import AIAnomalyDetection from './analysis/AIAnomalyDetection';
+import AIGridAssistant from './analysis/AIGridAssistant';
 
 const AnalysisHub = () => {
-  const [activeTab, setActiveTab] = useState('aiGridAssistant');
+  const [activeTab, setActiveTab] = useState('gridassistant');
 
-  const modules = [
+  // Definire i tab esattamente come nell'immagine
+  const tabs = [
     {
-      id: 'aiGridAssistant',
-      name: 'Assistente IA Grid',
-      icon: Brain,
-      color: '#4F46E5', // Indigo
+      id: 'gridassistant',
+      label: 'AI Grid Assistant',
       component: AIGridAssistant,
     },
     {
-      id: 'aiAnomalyDetection',
-      name: 'Rilevamento Anomalie IA',
-      icon: AlertTriangle,
-      color: '#F43F5E', // Rose
+      id: 'anomalyDetection',
+      label: 'Anomaly Detection',
       component: AIAnomalyDetection,
     },
     {
-      id: 'demandForecast',
-      name: 'Previsione Domanda',
-      icon: Activity,
-      color: '#10B981', // Emerald
-      component: DemandForecast,
-    },
-    {
-      id: 'congestionManagement',
-      name: 'Gestione Congestioni',
-      icon: Target,
-      color: '#F59E0B', // Amber
-      component: CongestionManagement,
-    },
-    {
-      id: 'predictiveMaintenance',
-      name: 'Manutenzione Predittiva',
-      icon: Wrench,
-      color: '#6366F1', // Indigo
+      id: 'manutenzione',
+      label: 'Predictive Maintenance',
       component: PredictiveMaintenance,
     },
     {
-      id: 'networkStability',
-      name: 'Stabilità di Rete',
-      icon: TrendingUp,
-      color: '#2563EB', // Blue
-      component: NetworkStability,
+      id: 'previsione',
+      label: 'Demand Forecast',
+      component: DemandForecast,
+    },
+    // {
+    //   id: 'stabilita',
+    //   label: 'Stabilità di Rete',
+    //   component: NetworkStability,
+    // },
+    {
+      id: 'congestioni',
+      label: 'Gestione Congestioni',
+      component: CongestionManagement,
+    },
+    // {
+    //   id: 'assistente',
+    //   label: 'Assistente Virtuale',
+    //   component: VirtualAssistant,
+    // },
+    // { id: 'cybersecurity', label: 'Cybersecurity', component: CyberSecurity },
+    {
+      id: 'rinnovabili',
+      label: 'Integrazione Rinnovabili',
+      component: RenewableIntegration,
     },
   ];
 
-  // Find the active module
-  const activeModule = modules.find((m) => m.id === activeTab);
+  const secondaryTabs = [
+    // {
+    //   id: 'simulazione',
+    //   label: 'Simulazione "What-If"',
+    //   component: WhatIfSimulation,
+    // },
+    // {
+    //   id: 'analisiN1',
+    //   label: 'Analisi di Sicurezza N-1',
+    //   component: N1SecurityAnalysis,
+    // },
+    // {
+    //   id: 'monitoraggio',
+    //   label: 'Monitoraggio Interconnessioni',
+    //   component: InterconnectionMonitoring,
+    // },
+  ];
+
+  // Trova il componente da renderizzare in base al tab attivo
+  const renderActiveComponent = () => {
+    const activeTabData = [...tabs, ...secondaryTabs].find(
+      (tab) => tab.id === activeTab
+    );
+    if (!activeTabData) return null;
+
+    const ActiveComponent = activeTabData.component;
+    return <ActiveComponent />;
+  };
 
   return (
-    <div className='bg-gray-50 p-6 min-h-screen'>
-      <h1 className='text-3xl font-bold text-gray-800 mb-5'>
-        Hub di Analisi Avanzata
-      </h1>
+    <div className='hub-container'>
+      <h1>Hub di Analisi Avanzata</h1>
 
-      {/* Info Banner */}
-      <div className='bg-blue-50 border-l-4 border-blue-500 p-4 mb-6 flex items-center'>
-        <Brain className='text-blue-500 mr-3 flex-shrink-0' size={24} />
-        <p className='text-blue-700'>
-          <span className='font-semibold'>
-            Hub di Analisi Potenziato con AI
-          </span>{' '}
-          - Nuovi strumenti di intelligenza artificiale sono ora disponibili per
-          supportare le operazioni di rete!
-        </p>
-      </div>
-
-      {/* Modern Buttons */}
-      <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8'>
-        {modules.map((module) => (
-          <button
-            key={module.id}
-            onClick={() => setActiveTab(module.id)}
-            className='relative group'
-          >
-            <div
-              className={`
-                flex flex-col items-center justify-center p-5 rounded-xl
-                transition-all duration-300 border h-full
-                ${
-                  activeTab === module.id
-                    ? 'bg-white shadow-lg border-transparent transform -translate-y-1'
-                    : 'bg-white border-gray-100 hover:shadow-md hover:border-gray-200'
-                }
-              `}
-              style={{
-                borderTop:
-                  activeTab === module.id ? `3px solid ${module.color}` : '',
-              }}
+      <div className='tab-container'>
+        {/* Prima riga di tab */}
+        <div className='tab-row'>
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              className={`tab-button ${activeTab === tab.id ? 'active' : ''}`}
+              onClick={() => setActiveTab(tab.id)}
             >
-              <div
-                className='flex items-center justify-center w-12 h-12 mb-3 rounded-full'
-                style={{
-                  backgroundColor: `${module.color}10`,
-                  color: module.color,
-                }}
-              >
-                <module.icon size={24} />
-              </div>
+              {tab.label}
+            </button>
+          ))}
+        </div>
 
-              <span className='text-sm font-medium text-center text-gray-800'>
-                {module.name}
-              </span>
-
-              {/* Bottom indicator bar for active state */}
-              {activeTab === module.id && (
-                <div
-                  className='absolute bottom-0 left-1/2 transform -translate-x-1/2 h-1 w-12 rounded-t-full'
-                  style={{ backgroundColor: module.color }}
-                ></div>
-              )}
-            </div>
-          </button>
-        ))}
+        {/* Seconda riga di tab */}
+        <div className='tab-row'>
+          {secondaryTabs.map((tab) => (
+            <button
+              key={tab.id}
+              className={`tab-button ${activeTab === tab.id ? 'active' : ''}`}
+              onClick={() => setActiveTab(tab.id)}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* Content Area */}
-      <div className='bg-white rounded-lg shadow-md p-6'>
-        {activeModule && <activeModule.component />}
-      </div>
+      {/* Area contenuto - Mostra il componente corrispondente al tab attivo */}
+      <div className='content-area'>{renderActiveComponent()}</div>
     </div>
   );
 };
