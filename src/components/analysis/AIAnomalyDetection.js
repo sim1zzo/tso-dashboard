@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   AlertTriangle,
   BarChart2,
@@ -11,6 +11,7 @@ import {
   Check,
   X,
   MapPin,
+  Info,
 } from 'lucide-react';
 import {
   LineChart,
@@ -30,101 +31,92 @@ const Container = styled.div`
   font-family: Arial, sans-serif;
 `;
 
+// Adding all missing styled components
 const Header = styled.div`
   display: flex;
   align-items: center;
   margin-bottom: 20px;
 `;
 
-const Title = styled.h2`
+const Title = styled.h1`
+  margin: 0 0 0 10px;
   font-size: 24px;
-  font-weight: bold;
-  margin: 0;
-  margin-left: 10px;
+  color: #333;
 `;
 
 const Card = styled.div`
   background-color: white;
   border-radius: 8px;
-  padding: 20px;
-  margin-bottom: 20px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+  overflow: hidden;
 `;
 
 const CardHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 15px;
+  padding: 16px 20px;
+  border-bottom: 1px solid #eee;
 `;
 
-const CardTitle = styled.h3`
-  font-size: 18px;
+const CardTitle = styled.h2`
   margin: 0;
+  font-size: 18px;
   display: flex;
   align-items: center;
+  color: #333;
 `;
 
-const IconWrapper = styled.span`
+const IconWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin-right: 8px;
-  display: inline-flex;
-`;
-
-const FilterContainer = styled.div`
-  display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
-`;
-
-const FilterButton = styled.button`
-  padding: 8px 15px;
-  background-color: ${(props) => (props.active ? '#3385ad' : '#f1f1f1')};
-  color: ${(props) => (props.active ? 'white' : '#333')};
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  transition: all 0.2s;
-
-  &:hover {
-    background-color: ${(props) => (props.active ? '#286d8e' : '#e0e0e0')};
-  }
 `;
 
 const RefreshButton = styled.button`
-  padding: 8px 15px;
-  background-color: #4caf50;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
   display: flex;
   align-items: center;
+  background-color: #f5f5f5;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 14px;
+  cursor: pointer;
   transition: background-color 0.2s;
 
   &:hover {
-    background-color: #388e3c;
+    background-color: #e0e0e0;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 `;
 
 const StatsContainer = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  display: flex;
+  flex-wrap: wrap;
   gap: 15px;
-  margin-bottom: 20px;
+  padding: 20px;
 `;
 
 const StatCard = styled.div`
-  background-color: ${(props) => props.bgColor || '#f9f9f9'};
+  flex: 1;
+  min-width: 150px;
   padding: 15px;
   border-radius: 8px;
-  text-align: center;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  background-color: ${(props) => props.bgColor || '#f5f5f5'};
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 `;
 
 const StatValue = styled.div`
-  font-size: 24px;
+  font-size: 28px;
   font-weight: bold;
   color: ${(props) => props.color || '#333'};
   margin-bottom: 5px;
@@ -132,241 +124,145 @@ const StatValue = styled.div`
 
 const StatLabel = styled.div`
   font-size: 14px;
-  color: #777;
+  color: #666;
+`;
+
+const FilterContainer = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 0 20px 20px;
+`;
+
+const FilterButton = styled.button`
+  display: flex;
+  align-items: center;
+  background-color: ${(props) => (props.active ? '#3385ad' : '#f5f5f5')};
+  color: ${(props) => (props.active ? 'white' : '#666')};
+  border: none;
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background-color: ${(props) => (props.active ? '#2a6d8e' : '#e0e0e0')};
+  }
 `;
 
 const AnomalyList = styled.div`
-  margin-top: 20px;
+  padding: 0 20px 20px;
+  max-height: 500px;
+  overflow-y: auto;
 `;
 
 const AnomalyItem = styled.div`
-  padding: 15px;
-  background-color: ${(props) =>
-    props.severity === 'high'
-      ? '#ffebee'
-      : props.severity === 'medium'
-      ? '#fff8e1'
-      : '#e8f5e9'};
   border-left: 4px solid
-    ${(props) =>
-      props.severity === 'high'
-        ? '#f44336'
-        : props.severity === 'medium'
-        ? '#ffc107'
-        : '#4caf50'};
+    ${(props) => {
+      switch (props.severity) {
+        case 'high':
+          return '#f44336';
+        case 'medium':
+          return '#ffc107';
+        case 'low':
+          return '#4caf50';
+        default:
+          return '#757575';
+      }
+    }};
+  background-color: white;
   border-radius: 4px;
-  margin-bottom: 10px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  margin-bottom: 15px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: box-shadow 0.2s;
+
+  &:hover {
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  }
 `;
 
 const AnomalyInfo = styled.div`
-  flex: 1;
+  padding: 15px;
 `;
 
 const AnomalyTitle = styled.div`
-  font-weight: bold;
-  margin-bottom: 5px;
   display: flex;
   align-items: center;
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: 8px;
 `;
 
 const AnomalyDescription = styled.div`
   font-size: 14px;
-  color: #555;
+  color: #666;
+  margin-bottom: 10px;
 `;
 
 const AnomalyMeta = styled.div`
   display: flex;
+  flex-wrap: wrap;
   gap: 15px;
-  margin-top: 5px;
-  font-size: 12px;
-  color: #777;
 `;
 
 const AnomalyMetaItem = styled.div`
   display: flex;
   align-items: center;
+  font-size: 12px;
+  color: #777;
 `;
 
 const AnomalyActions = styled.div`
   display: flex;
+  padding: 0 15px 15px;
   gap: 10px;
 `;
 
 const ActionButton = styled.button`
-  padding: 5px 10px;
+  display: flex;
+  align-items: center;
   background-color: ${(props) => props.color || '#3385ad'};
   color: white;
   border: none;
   border-radius: 4px;
+  padding: 6px 12px;
+  font-size: 13px;
   cursor: pointer;
-  display: flex;
-  align-items: center;
   transition: background-color 0.2s;
 
   &:hover {
-    background-color: ${(props) => props.hoverColor || '#286d8e'};
+    background-color: ${(props) => props.hoverColor || '#2a6d8e'};
   }
 `;
 
 const ChartWrapper = styled.div`
+  width: 100%;
   height: 300px;
-  margin-top: 20px;
+  margin: 20px 0;
 `;
 
 const MapWrapper = styled.div`
-  height: 400px;
-  margin-top: 20px;
-  background-color: #f0f0f0;
-  border-radius: 8px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: relative;
-`;
-
-const ItalySVGMap = styled.svg`
   width: 100%;
-  height: 100%;
+  height: 400px;
+  border-radius: 8px;
+  overflow: hidden;
 `;
 
-// Location coordinates for mock data (simplified Italian map coordinates)
+// Location coordinates for mock data (real Italian geographic coordinates)
 const locationCoordinates = {
-  'Sottostazione Milano Ovest': { x: 300, y: 200 },
-  'Nodo Roma Nord': { x: 400, y: 350 },
-  'Linea Firenze-Bologna': { x: 380, y: 280 },
-  'Trasformatore AT/MT Napoli': { x: 450, y: 400 },
-  'Interconnessione Italia-Francia': { x: 200, y: 180 },
-  'Centrale Eolica Foggia': { x: 480, y: 380 },
-};
-
-// Mock data for anomalies
-const generateMockAnomalies = () => {
-  const anomalyTypes = [
-    {
-      type: 'voltage',
-      title: 'Anomalia di Tensione',
-      description: 'Variazione di tensione superiore al 5% rilevata',
-    },
-    {
-      type: 'frequency',
-      title: 'Deviazione di Frequenza',
-      description: 'Oscillazione di frequenza oltre i limiti normali',
-    },
-    {
-      type: 'load',
-      title: 'Picco di Carico',
-      description: 'Aumento improvviso del carico oltre la capacità prevista',
-    },
-    {
-      type: 'generation',
-      title: 'Oscillazione di Generazione',
-      description: 'Variazione rapida nella generazione rinnovabile',
-    },
-    {
-      type: 'transformer',
-      title: 'Sovraccarico Trasformatore',
-      description: 'Temperatura del trasformatore sopra la norma',
-    },
-    {
-      type: 'line',
-      title: 'Congestione Linea',
-      description: 'Linea di trasmissione operante vicino al limite',
-    },
-  ];
-
-  const locations = [
-    'Sottostazione Milano Ovest',
-    'Nodo Roma Nord',
-    'Linea Firenze-Bologna',
-    'Trasformatore AT/MT Napoli',
-    'Interconnessione Italia-Francia',
-    'Centrale Eolica Foggia',
-  ];
-
-  const severities = ['low', 'medium', 'high'];
-
-  const anomalies = [];
-  for (let i = 0; i < 8; i++) {
-    const anomalyType =
-      anomalyTypes[Math.floor(Math.random() * anomalyTypes.length)];
-    const location = locations[Math.floor(Math.random() * locations.length)];
-    const severity = severities[Math.floor(Math.random() * severities.length)];
-    const timestamp = new Date(
-      Date.now() - Math.random() * 36 * 60 * 60 * 1000
-    ); // Random time in the last 36 hours
-
-    anomalies.push({
-      id: i + 1,
-      type: anomalyType.type,
-      title: anomalyType.title,
-      description: anomalyType.description,
-      location: location,
-      severity: severity,
-      timestamp: timestamp,
-      value: Math.round((Math.random() * 50 + 50) * 100) / 100, // Random value between 50 and 100
-      threshold: 95,
-      acknowledged: Math.random() > 0.7,
-    });
-  }
-
-  return anomalies.sort((a, b) => {
-    const severityOrder = { high: 0, medium: 1, low: 2 };
-    return (
-      severityOrder[a.severity] - severityOrder[b.severity] ||
-      b.timestamp - a.timestamp
-    );
-  });
-};
-
-// Generate time series data for charts
-const generateTimeSeriesData = (anomalyType, anomalyTime) => {
-  const now = new Date();
-  const data = [];
-
-  // Generate data for the past 24 hours
-  for (let i = 24; i >= 0; i--) {
-    const time = new Date(now.getTime() - i * 60 * 60 * 1000);
-    const hour = time.getHours();
-
-    let value;
-    // Base value depends on time of day (simulating daily patterns)
-    if (hour >= 8 && hour <= 20) {
-      value = 80 + Math.random() * 10; // Higher during the day
-    } else {
-      value = 70 + Math.random() * 10; // Lower at night
-    }
-
-    // If this time is close to the anomaly time, create a spike or dip
-    if (
-      anomalyTime &&
-      Math.abs(time.getTime() - anomalyTime.getTime()) < 2 * 60 * 60 * 1000
-    ) {
-      const hoursFromAnomaly =
-        Math.abs(time.getTime() - anomalyTime.getTime()) / (60 * 60 * 1000);
-      const anomalyEffect = (2 - hoursFromAnomaly) * 20; // Stronger effect closer to anomaly time
-
-      if (
-        anomalyType === 'voltage' ||
-        anomalyType === 'frequency' ||
-        anomalyType === 'load'
-      ) {
-        value += anomalyEffect; // Spike
-      } else {
-        value -= anomalyEffect; // Dip
-      }
-    }
-
-    data.push({
-      time: time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      value: Math.max(0, Math.min(120, value)), // Clamp between 0 and 120
-      threshold: 95,
-    });
-  }
-
-  return data;
+  'Sottostazione Milano Ovest': [45.4642, 9.19],
+  'Nodo Roma Nord': [41.9028, 12.4964],
+  'Linea Firenze-Bologna': [43.7946, 11.2515],
+  'Trasformatore AT/MT Napoli': [40.8518, 14.2681],
+  'Interconnessione Italia-Francia': [45.7692, 6.9801],
+  'Centrale Eolica Foggia': [41.4621, 15.5464],
+  'Stazione Torino Est': [45.0703, 7.6869],
+  'Centrale Solare Bari': [41.1172, 16.8719],
+  'Impianto Venezia': [45.4371, 12.3326],
+  'Sottostazione Palermo': [38.1121, 13.3366],
+  'Interconnessione Sicilia': [37.5079, 15.083],
+  'Genova Centrale': [44.4056, 8.9463],
 };
 
 /**
@@ -387,6 +283,33 @@ const AIAnomalyDetection = () => {
   });
   const [selectedAnomaly, setSelectedAnomaly] = useState(null);
   const [chartData, setChartData] = useState([]);
+  const [map, setMap] = useState(null);
+  const [markersGroup, setMarkersGroup] = useState(null);
+  const [markers, setMarkers] = useState({});
+  const [mapInitialized, setMapInitialized] = useState(false);
+  const mapContainerRef = useRef(null);
+
+  // Add global animation styles
+  useEffect(() => {
+    // Create and add global style for animations
+    const styleElement = document.createElement('style');
+    styleElement.innerHTML = `
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      
+      .spin {
+        animation: spin 1s linear infinite;
+      }
+    `;
+    document.head.appendChild(styleElement);
+
+    // Cleanup when component unmounts
+    return () => {
+      document.head.removeChild(styleElement);
+    };
+  }, []);
 
   // Initialize with mock data
   useEffect(() => {
@@ -406,6 +329,272 @@ const AIAnomalyDetection = () => {
       );
     }
   }, [selectedAnomaly]);
+
+  // Initialize Leaflet map
+  useEffect(() => {
+    // To prevent multiple initializations, check if already initialized
+    if (mapInitialized) return;
+
+    if (!window.L) {
+      // Load Leaflet CSS if not already loaded
+      if (!document.querySelector('link[href*="leaflet.css"]')) {
+        const linkElement = document.createElement('link');
+        linkElement.rel = 'stylesheet';
+        linkElement.href =
+          'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.3/leaflet.css';
+        document.head.appendChild(linkElement);
+      }
+
+      // Load Leaflet script if not already loaded
+      if (!document.querySelector('script[src*="leaflet.js"]')) {
+        const scriptElement = document.createElement('script');
+        scriptElement.src =
+          'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.3/leaflet.js';
+        scriptElement.onload = initializeMap;
+        document.body.appendChild(scriptElement);
+      } else {
+        // Script exists but we need to wait for it to load
+        setTimeout(initializeMap, 100);
+      }
+    } else {
+      initializeMap();
+    }
+
+    return () => {
+      if (map) {
+        map.remove();
+      }
+    };
+  }, [mapInitialized, map]);
+
+  // Update map markers when filtered anomalies change
+  useEffect(() => {
+    if (mapInitialized && markersGroup && filteredAnomalies.length > 0) {
+      updateMapMarkers();
+    }
+  }, [filteredAnomalies, mapInitialized, markersGroup]);
+
+  // Mock data for anomalies
+  const generateMockAnomalies = () => {
+    const anomalyTypes = [
+      {
+        type: 'voltage',
+        title: 'Anomalia di Tensione',
+        description: 'Variazione di tensione superiore al 5% rilevata',
+      },
+      {
+        type: 'frequency',
+        title: 'Deviazione di Frequenza',
+        description: 'Oscillazione di frequenza oltre i limiti normali',
+      },
+      {
+        type: 'load',
+        title: 'Picco di Carico',
+        description: 'Aumento improvviso del carico oltre la capacità prevista',
+      },
+      {
+        type: 'generation',
+        title: 'Oscillazione di Generazione',
+        description: 'Variazione rapida nella generazione rinnovabile',
+      },
+      {
+        type: 'transformer',
+        title: 'Sovraccarico Trasformatore',
+        description: 'Temperatura del trasformatore sopra la norma',
+      },
+      {
+        type: 'line',
+        title: 'Congestione Linea',
+        description: 'Linea di trasmissione operante vicino al limite',
+      },
+    ];
+
+    const locations = Object.keys(locationCoordinates);
+    const severities = ['low', 'medium', 'high'];
+
+    const anomalies = [];
+    for (let i = 0; i < 12; i++) {
+      const anomalyType =
+        anomalyTypes[Math.floor(Math.random() * anomalyTypes.length)];
+      const location = locations[Math.floor(Math.random() * locations.length)];
+      const severity =
+        severities[Math.floor(Math.random() * severities.length)];
+      const timestamp = new Date(
+        Date.now() - Math.random() * 36 * 60 * 60 * 1000
+      ); // Random time in the last 36 hours
+
+      anomalies.push({
+        id: i + 1,
+        type: anomalyType.type,
+        title: anomalyType.title,
+        description: anomalyType.description,
+        location: location,
+        coordinates: locationCoordinates[location],
+        severity: severity,
+        timestamp: timestamp,
+        value: Math.round((Math.random() * 50 + 50) * 100) / 100, // Random value between 50 and 100
+        threshold: 95,
+        acknowledged: Math.random() > 0.7,
+      });
+    }
+
+    return anomalies.sort((a, b) => {
+      const severityOrder = { high: 0, medium: 1, low: 2 };
+      return (
+        severityOrder[a.severity] - severityOrder[b.severity] ||
+        b.timestamp - a.timestamp
+      );
+    });
+  };
+
+  // Generate time series data for charts
+  const generateTimeSeriesData = (anomalyType, anomalyTime) => {
+    const now = new Date();
+    const data = [];
+
+    // Generate data for the past 24 hours
+    for (let i = 24; i >= 0; i--) {
+      const time = new Date(now.getTime() - i * 60 * 60 * 1000);
+      const hour = time.getHours();
+
+      let value;
+      // Base value depends on time of day (simulating daily patterns)
+      if (hour >= 8 && hour <= 20) {
+        value = 80 + Math.random() * 10; // Higher during the day
+      } else {
+        value = 70 + Math.random() * 10; // Lower at night
+      }
+
+      // If this time is close to the anomaly time, create a spike or dip
+      if (
+        anomalyTime &&
+        Math.abs(time.getTime() - anomalyTime.getTime()) < 2 * 60 * 60 * 1000
+      ) {
+        const hoursFromAnomaly =
+          Math.abs(time.getTime() - anomalyTime.getTime()) / (60 * 60 * 1000);
+        const anomalyEffect = (2 - hoursFromAnomaly) * 20; // Stronger effect closer to anomaly time
+
+        if (
+          anomalyType === 'voltage' ||
+          anomalyType === 'frequency' ||
+          anomalyType === 'load'
+        ) {
+          value += anomalyEffect; // Spike
+        } else {
+          value -= anomalyEffect; // Dip
+        }
+      }
+
+      data.push({
+        time: time.toLocaleTimeString([], {
+          hour: '2-digit',
+          minute: '2-digit',
+        }),
+        value: Math.max(0, Math.min(120, value)), // Clamp between 0 and 120
+        threshold: 95,
+      });
+    }
+
+    return data;
+  };
+
+  // Initialize Leaflet map
+  const initializeMap = () => {
+    // Wait for the element to exist in the DOM and ensure it's not already initialized
+    if (!mapContainerRef.current || mapInitialized) return;
+
+    try {
+      // Check if the map container already has a Leaflet instance
+      const containerElement = mapContainerRef.current;
+      if (containerElement._leaflet_id) {
+        console.log('Map already initialized, skipping initialization');
+        return;
+      }
+
+      // Create a new map instance
+      const newMap = window.L.map(mapContainerRef.current).setView(
+        [42.5, 12.5],
+        6
+      );
+
+      // Add the map layer (OpenStreetMap)
+      window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution:
+          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      }).addTo(newMap);
+
+      // Create a group for markers
+      const newMarkersGroup = window.L.layerGroup().addTo(newMap);
+
+      setMap(newMap);
+      setMarkersGroup(newMarkersGroup);
+      setMapInitialized(true);
+    } catch (error) {
+      console.error('Error initializing map:', error);
+    }
+  };
+
+  // Update markers on the map
+  const updateMapMarkers = () => {
+    if (!window.L || !map || !markersGroup) return;
+
+    // Clear existing markers
+    markersGroup.clearLayers();
+    let newMarkers = {};
+
+    // Add markers for filtered anomalies
+    filteredAnomalies.forEach((anomaly) => {
+      if (!anomaly.coordinates) return;
+
+      // Create custom icon based on severity
+      const color = getSeverityColor(anomaly.severity);
+
+      const customIcon = window.L.divIcon({
+        className: 'custom-div-icon',
+        html: `<div style="
+          background-color: ${color};
+          width: 12px;
+          height: 12px;
+          border-radius: 50%;
+          border: 2px solid white;
+          box-shadow: 0 0 0 2px ${color};
+        "></div>`,
+        iconSize: [16, 16],
+        iconAnchor: [8, 8],
+      });
+
+      // Create marker
+      const marker = window.L.marker(anomaly.coordinates, {
+        icon: customIcon,
+      }).addTo(markersGroup);
+
+      // Add popup
+      marker.bindPopup(`
+        <div style="width: 200px; padding: 8px;">
+          <h3 style="margin: 0 0 8px; font-size: 14px; font-weight: bold; color: ${color};">
+            ${anomaly.title}
+          </h3>
+          <p style="margin: 0 0 8px; font-size: 12px;">${
+            anomaly.description
+          }</p>
+          <div style="font-size: 11px; color: #666;">
+            <div>${anomaly.location}</div>
+            <div>Rilevato: ${formatTimestamp(anomaly.timestamp)}</div>
+          </div>
+        </div>
+      `);
+
+      // Handle click
+      marker.on('click', () => {
+        setSelectedAnomaly(anomaly);
+      });
+
+      // Store marker for reference
+      newMarkers[anomaly.id] = marker;
+    });
+
+    setMarkers(newMarkers);
+  };
 
   const refreshAnomalies = () => {
     setLoading(true);
@@ -469,6 +658,16 @@ const AIAnomalyDetection = () => {
 
   const handleViewDetails = (anomaly) => {
     setSelectedAnomaly(anomaly);
+
+    // If map and markers are initialized, open the popup for this anomaly
+    if (mapInitialized && markers[anomaly.id]) {
+      markers[anomaly.id].openPopup();
+
+      // Center map on the selected anomaly
+      if (map && anomaly.coordinates) {
+        map.setView(anomaly.coordinates, 8);
+      }
+    }
   };
 
   // Get severity color for various UI elements
@@ -510,16 +709,17 @@ const AIAnomalyDetection = () => {
     }
   };
 
-  const getMarkerColor = (severity) => {
+  // Get severity name
+  const getSeverityName = (severity) => {
     switch (severity) {
       case 'high':
-        return '#f44336'; // Red
+        return 'Alta';
       case 'medium':
-        return '#ffc107'; // Orange
+        return 'Media';
       case 'low':
-        return '#4caf50'; // Green
+        return 'Bassa';
       default:
-        return '#757575'; // Gray
+        return '';
     }
   };
 
@@ -541,7 +741,11 @@ const AIAnomalyDetection = () => {
             Panoramica Anomalie
           </CardTitle>
           <RefreshButton onClick={refreshAnomalies} disabled={loading}>
-            <RefreshCw size={18} style={{ marginRight: '5px' }} />
+            <RefreshCw
+              size={18}
+              style={{ marginRight: '5px' }}
+              className={loading ? 'spin' : ''}
+            />
             {loading ? 'Aggiornamento...' : 'Aggiorna'}
           </RefreshButton>
         </CardHeader>
@@ -702,49 +906,214 @@ const AIAnomalyDetection = () => {
             </CardTitle>
           </CardHeader>
 
-          <div>
-            <div style={{ margin: '10px 0' }}>
-              <strong>Localizzazione:</strong> {selectedAnomaly.location}
-            </div>
-            <div style={{ margin: '10px 0' }}>
-              <strong>Severità:</strong>{' '}
-              <span
-                style={{ color: getSeverityColor(selectedAnomaly.severity) }}
+          <div style={{ padding: '0 20px 20px' }}>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+                gap: '16px',
+                margin: '16px 0',
+              }}
+            >
+              <div
+                style={{
+                  padding: '16px',
+                  backgroundColor: '#f9f9f9',
+                  borderRadius: '8px',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+                }}
               >
-                {selectedAnomaly.severity === 'high'
-                  ? 'Alta'
-                  : selectedAnomaly.severity === 'medium'
-                  ? 'Media'
-                  : 'Bassa'}
+                <div style={{ marginBottom: '12px' }}>
+                  <span
+                    style={{
+                      display: 'block',
+                      fontSize: '14px',
+                      color: '#666',
+                      marginBottom: '4px',
+                    }}
+                  >
+                    Localizzazione
+                  </span>
+                  <span
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      fontSize: '16px',
+                      fontWeight: '500',
+                    }}
+                  >
+                    <MapPin
+                      size={16}
+                      style={{ marginRight: '6px', color: '#3385ad' }}
+                    />
+                    {selectedAnomaly.location}
+                  </span>
+                </div>
+                <div style={{ marginBottom: '12px' }}>
+                  <span
+                    style={{
+                      display: 'block',
+                      fontSize: '14px',
+                      color: '#666',
+                      marginBottom: '4px',
+                    }}
+                  >
+                    Severità
+                  </span>
+                  <span
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      fontSize: '16px',
+                      fontWeight: '500',
+                      color: getSeverityColor(selectedAnomaly.severity),
+                    }}
+                  >
+                    <AlertTriangle size={16} style={{ marginRight: '6px' }} />
+                    {getSeverityName(selectedAnomaly.severity)}
+                  </span>
+                </div>
+              </div>
+
+              <div
+                style={{
+                  padding: '16px',
+                  backgroundColor: '#f9f9f9',
+                  borderRadius: '8px',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+                }}
+              >
+                <div style={{ marginBottom: '12px' }}>
+                  <span
+                    style={{
+                      display: 'block',
+                      fontSize: '14px',
+                      color: '#666',
+                      marginBottom: '4px',
+                    }}
+                  >
+                    Rilevata
+                  </span>
+                  <span
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      fontSize: '16px',
+                      fontWeight: '500',
+                    }}
+                  >
+                    <Clock
+                      size={16}
+                      style={{ marginRight: '6px', color: '#3385ad' }}
+                    />
+                    {selectedAnomaly.timestamp.toLocaleString()}
+                  </span>
+                </div>
+                <div style={{ marginBottom: '12px' }}>
+                  <span
+                    style={{
+                      display: 'block',
+                      fontSize: '14px',
+                      color: '#666',
+                      marginBottom: '4px',
+                    }}
+                  >
+                    Stato
+                  </span>
+                  <span
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      fontSize: '16px',
+                      fontWeight: '500',
+                      color: selectedAnomaly.acknowledged
+                        ? '#4caf50'
+                        : '#ff9800',
+                    }}
+                  >
+                    {selectedAnomaly.acknowledged ? (
+                      <>
+                        <Check size={16} style={{ marginRight: '6px' }} />
+                        Riconosciuta
+                      </>
+                    ) : (
+                      <>
+                        <Flag size={16} style={{ marginRight: '6px' }} />
+                        Da riconoscere
+                      </>
+                    )}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div
+              style={{
+                padding: '16px',
+                backgroundColor: '#f9f9f9',
+                borderRadius: '8px',
+                marginBottom: '16px',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+              }}
+            >
+              <span
+                style={{
+                  display: 'block',
+                  fontSize: '14px',
+                  color: '#666',
+                  marginBottom: '8px',
+                }}
+              >
+                Descrizione
               </span>
-            </div>
-            <div style={{ margin: '10px 0' }}>
-              <strong>Rilevata:</strong>{' '}
-              {selectedAnomaly.timestamp.toLocaleString()}
-            </div>
-            <div style={{ margin: '10px 0' }}>
-              <strong>Stato:</strong>{' '}
-              {selectedAnomaly.acknowledged ? 'Riconosciuta' : 'Da riconoscere'}
-            </div>
-            <div style={{ margin: '10px 0' }}>
-              <strong>Descrizione:</strong> {selectedAnomaly.description}
+              <p
+                style={{
+                  margin: '0',
+                  fontSize: '16px',
+                  lineHeight: '1.5',
+                }}
+              >
+                {selectedAnomaly.description}
+              </p>
             </div>
 
             {/* Chart Wrapper */}
             <ChartWrapper>
               <ResponsiveContainer width='100%' height='100%'>
                 <LineChart data={chartData}>
-                  <CartesianGrid strokeDasharray='3 3' />
-                  <XAxis dataKey='time' />
-                  <YAxis domain={[0, 120]} />
-                  <Tooltip />
+                  <CartesianGrid strokeDasharray='3 3' stroke='#eeeeee' />
+                  <XAxis
+                    dataKey='time'
+                    tick={{ fill: '#666' }}
+                    axisLine={{ stroke: '#e0e0e0' }}
+                    tickLine={{ stroke: '#e0e0e0' }}
+                  />
+                  <YAxis
+                    domain={[0, 120]}
+                    tick={{ fill: '#666' }}
+                    axisLine={{ stroke: '#e0e0e0' }}
+                    tickLine={{ stroke: '#e0e0e0' }}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                      border: 'none',
+                      borderRadius: '8px',
+                      boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+                    }}
+                  />
                   <Line
                     type='monotone'
                     dataKey='value'
                     stroke='#3385ad'
-                    strokeWidth={2}
+                    strokeWidth={3}
                     dot={false}
-                    activeDot={{ r: 8 }}
+                    activeDot={{
+                      r: 8,
+                      fill: '#3385ad',
+                      stroke: 'white',
+                      strokeWidth: 2,
+                    }}
                   />
                   <Line
                     type='monotone'
@@ -758,115 +1127,703 @@ const AIAnomalyDetection = () => {
               </ResponsiveContainer>
             </ChartWrapper>
 
+            {/* Action buttons */}
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                marginTop: '20px',
+                marginBottom: '10px',
+              }}
+            >
+              <ActionButton
+                onClick={() => {
+                  // Scroll to map section and center on the anomaly
+                  if (mapInitialized && markers[selectedAnomaly.id]) {
+                    const mapElement = document.getElementById('anomaly-map');
+                    if (mapElement) {
+                      mapElement.scrollIntoView({ behavior: 'smooth' });
+
+                      // Center map on selected anomaly
+                      if (map && selectedAnomaly.coordinates) {
+                        setTimeout(() => {
+                          map.setView(selectedAnomaly.coordinates, 8);
+                          // Open popup for the marker
+                          markers[selectedAnomaly.id].openPopup();
+                        }, 500);
+                      }
+                    }
+                  }
+                }}
+              >
+                <MapPin size={16} style={{ marginRight: '8px' }} />
+                Visualizza sulla mappa
+              </ActionButton>
+
+              <div style={{ display: 'flex', gap: '10px' }}>
+                {!selectedAnomaly.acknowledged && (
+                  <ActionButton
+                    onClick={() => handleAcknowledge(selectedAnomaly.id)}
+                    color='#4caf50'
+                    hoverColor='#388e3c'
+                  >
+                    <Check size={16} style={{ marginRight: '8px' }} />
+                    Riconosci
+                  </ActionButton>
+                )}
+                <ActionButton
+                  onClick={() => handleDismiss(selectedAnomaly.id)}
+                  color='#f44336'
+                  hoverColor='#d32f2f'
+                >
+                  <X size={16} style={{ marginRight: '8px' }} />
+                  Ignora
+                </ActionButton>
+              </div>
+            </div>
+
             {/* AI Recommendations */}
             <div style={{ marginTop: '20px' }}>
-              <strong>Raccomandazioni AI:</strong>
-              <ul style={{ marginTop: '10px', paddingLeft: '20px' }}>
-                {selectedAnomaly.type === 'voltage' && (
-                  <>
-                    <li>
-                      Verificare gli impianti di regolazione della tensione
-                      nella sottostazione
-                    </li>
-                    <li>
-                      Controllare le batterie di condensatori e reattori shunt
-                    </li>
-                    <li>
-                      Monitorare i trasformatori con variatori sotto carico
-                    </li>
-                  </>
-                )}
-                {/* (Other recommendation sections remain the same) */}
-              </ul>
+              <div
+                style={{
+                  padding: '16px',
+                  backgroundColor: '#e3f2fd',
+                  borderRadius: '8px',
+                  marginBottom: '16px',
+                }}
+              >
+                <h4
+                  style={{
+                    margin: '0 0 10px 0',
+                    fontSize: '16px',
+                    fontWeight: '500',
+                    color: '#0d47a1',
+                    display: 'flex',
+                    alignItems: 'center',
+                  }}
+                >
+                  <Info size={18} style={{ marginRight: '8px' }} />
+                  Raccomandazioni AI
+                </h4>
+
+                <ul
+                  style={{
+                    margin: '0',
+                    paddingLeft: '16px',
+                    listStyleType: 'none',
+                  }}
+                >
+                  {selectedAnomaly.type === 'voltage' && (
+                    <>
+                      <li
+                        style={{
+                          padding: '8px 0',
+                          display: 'flex',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: '6px',
+                            height: '6px',
+                            backgroundColor: '#0d47a1',
+                            borderRadius: '50%',
+                            marginRight: '10px',
+                          }}
+                        ></div>
+                        Verificare gli impianti di regolazione della tensione
+                        nella sottostazione
+                      </li>
+                      <li
+                        style={{
+                          padding: '8px 0',
+                          display: 'flex',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: '6px',
+                            height: '6px',
+                            backgroundColor: '#0d47a1',
+                            borderRadius: '50%',
+                            marginRight: '10px',
+                          }}
+                        ></div>
+                        Controllare le batterie di condensatori e reattori shunt
+                      </li>
+                      <li
+                        style={{
+                          padding: '8px 0',
+                          display: 'flex',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: '6px',
+                            height: '6px',
+                            backgroundColor: '#0d47a1',
+                            borderRadius: '50%',
+                            marginRight: '10px',
+                          }}
+                        ></div>
+                        Monitorare i trasformatori con variatori sotto carico
+                      </li>
+                    </>
+                  )}
+                  {selectedAnomaly.type === 'frequency' && (
+                    <>
+                      <li
+                        style={{
+                          padding: '8px 0',
+                          display: 'flex',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: '6px',
+                            height: '6px',
+                            backgroundColor: '#0d47a1',
+                            borderRadius: '50%',
+                            marginRight: '10px',
+                          }}
+                        ></div>
+                        Verificare il sistema di regolazione primaria di
+                        frequenza
+                      </li>
+                      <li
+                        style={{
+                          padding: '8px 0',
+                          display: 'flex',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: '6px',
+                            height: '6px',
+                            backgroundColor: '#0d47a1',
+                            borderRadius: '50%',
+                            marginRight: '10px',
+                          }}
+                        ></div>
+                        Controllare lo stato dei generatori connessi
+                      </li>
+                      <li
+                        style={{
+                          padding: '8px 0',
+                          display: 'flex',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: '6px',
+                            height: '6px',
+                            backgroundColor: '#0d47a1',
+                            borderRadius: '50%',
+                            marginRight: '10px',
+                          }}
+                        ></div>
+                        Verificare eventuali distacchi o perdite di carico nella
+                        rete
+                      </li>
+                    </>
+                  )}
+                  {selectedAnomaly.type === 'load' && (
+                    <>
+                      <li
+                        style={{
+                          padding: '8px 0',
+                          display: 'flex',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: '6px',
+                            height: '6px',
+                            backgroundColor: '#0d47a1',
+                            borderRadius: '50%',
+                            marginRight: '10px',
+                          }}
+                        ></div>
+                        Verificare la capacità di trasmissione delle linee
+                        interessate
+                      </li>
+                      <li
+                        style={{
+                          padding: '8px 0',
+                          display: 'flex',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: '6px',
+                            height: '6px',
+                            backgroundColor: '#0d47a1',
+                            borderRadius: '50%',
+                            marginRight: '10px',
+                          }}
+                        ></div>
+                        Controllare la distribuzione del carico nella rete
+                      </li>
+                      <li
+                        style={{
+                          padding: '8px 0',
+                          display: 'flex',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: '6px',
+                            height: '6px',
+                            backgroundColor: '#0d47a1',
+                            borderRadius: '50%',
+                            marginRight: '10px',
+                          }}
+                        ></div>
+                        Valutare l'attivazione di risorse di riserva
+                      </li>
+                    </>
+                  )}
+                  {selectedAnomaly.type === 'generation' && (
+                    <>
+                      <li
+                        style={{
+                          padding: '8px 0',
+                          display: 'flex',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: '6px',
+                            height: '6px',
+                            backgroundColor: '#0d47a1',
+                            borderRadius: '50%',
+                            marginRight: '10px',
+                          }}
+                        ></div>
+                        Monitorare le previsioni meteorologiche per le prossime
+                        ore
+                      </li>
+                      <li
+                        style={{
+                          padding: '8px 0',
+                          display: 'flex',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: '6px',
+                            height: '6px',
+                            backgroundColor: '#0d47a1',
+                            borderRadius: '50%',
+                            marginRight: '10px',
+                          }}
+                        ></div>
+                        Verificare la disponibilità di riserva rotante
+                      </li>
+                      <li
+                        style={{
+                          padding: '8px 0',
+                          display: 'flex',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: '6px',
+                            height: '6px',
+                            backgroundColor: '#0d47a1',
+                            borderRadius: '50%',
+                            marginRight: '10px',
+                          }}
+                        ></div>
+                        Controllare i sistemi di previsione della generazione
+                        rinnovabile
+                      </li>
+                    </>
+                  )}
+                  {selectedAnomaly.type === 'transformer' && (
+                    <>
+                      <li
+                        style={{
+                          padding: '8px 0',
+                          display: 'flex',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: '6px',
+                            height: '6px',
+                            backgroundColor: '#0d47a1',
+                            borderRadius: '50%',
+                            marginRight: '10px',
+                          }}
+                        ></div>
+                        Verificare il sistema di raffreddamento del
+                        trasformatore
+                      </li>
+                      <li
+                        style={{
+                          padding: '8px 0',
+                          display: 'flex',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: '6px',
+                            height: '6px',
+                            backgroundColor: '#0d47a1',
+                            borderRadius: '50%',
+                            marginRight: '10px',
+                          }}
+                        ></div>
+                        Controllare il carico e la distribuzione della potenza
+                      </li>
+                      <li
+                        style={{
+                          padding: '8px 0',
+                          display: 'flex',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: '6px',
+                            height: '6px',
+                            backgroundColor: '#0d47a1',
+                            borderRadius: '50%',
+                            marginRight: '10px',
+                          }}
+                        ></div>
+                        Considerare la ridistribuzione del carico su altre linee
+                      </li>
+                    </>
+                  )}
+                  {selectedAnomaly.type === 'line' && (
+                    <>
+                      <li
+                        style={{
+                          padding: '8px 0',
+                          display: 'flex',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: '6px',
+                            height: '6px',
+                            backgroundColor: '#0d47a1',
+                            borderRadius: '50%',
+                            marginRight: '10px',
+                          }}
+                        ></div>
+                        Verificare i flussi di potenza sulla linea
+                      </li>
+                      <li
+                        style={{
+                          padding: '8px 0',
+                          display: 'flex',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: '6px',
+                            height: '6px',
+                            backgroundColor: '#0d47a1',
+                            borderRadius: '50%',
+                            marginRight: '10px',
+                          }}
+                        ></div>
+                        Controllare la disponibilità di percorsi alternativi
+                      </li>
+                      <li
+                        style={{
+                          padding: '8px 0',
+                          display: 'flex',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: '6px',
+                            height: '6px',
+                            backgroundColor: '#0d47a1',
+                            borderRadius: '50%',
+                            marginRight: '10px',
+                          }}
+                        ></div>
+                        Monitorare le condizioni ambientali lungo la linea
+                      </li>
+                    </>
+                  )}
+                </ul>
+              </div>
             </div>
           </div>
         </Card>
       )}
 
       {/* Anomaly Map Card */}
-      <Card>
+      <Card id='anomaly-map-card'>
         <CardHeader>
           <CardTitle>
             <IconWrapper>
               <MapPin />
             </IconWrapper>
-            Mappa delle Anomalie
+            Mappa Anomalie
           </CardTitle>
+          {!mapInitialized && (
+            <div
+              style={{ display: 'flex', alignItems: 'center', color: '#777' }}
+            >
+              <Info size={16} style={{ marginRight: '5px' }} />
+              Caricamento mappa...
+            </div>
+          )}
         </CardHeader>
 
-        <MapWrapper>
-          <ItalySVGMap viewBox='0 0 600 500'>
-            {/* Simplified Italy outline */}
-            <path
-              d='M200,180 L250,220 L300,250 L350,300 L400,350 L450,400 L500,380 L450,300 L400,250 L350,200 L300,180 Z'
-              fill='#e0e0e0'
-              stroke='#999'
-              strokeWidth='2'
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '16px',
+            padding: '0 20px 20px',
+          }}
+        >
+          {/* Map container */}
+          <MapWrapper>
+            <div
+              ref={mapContainerRef}
+              id='anomaly-map'
+              style={{ width: '100%', height: '100%' }}
             />
+          </MapWrapper>
 
-            {/* Anomaly markers */}
-            {anomalies.map((anomaly) => {
-              const coords = locationCoordinates[anomaly.location] || {
-                x: 300,
-                y: 250,
-              };
+          {/* Recent anomalies list */}
+          <div
+            style={{
+              padding: '16px',
+              backgroundColor: '#f9f9f9',
+              borderRadius: '8px',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+            }}
+          >
+            <h4
+              style={{
+                margin: '0 0 12px 0',
+                fontSize: '16px',
+                fontWeight: '500',
+                color: '#333',
+                display: 'flex',
+                alignItems: 'center',
+              }}
+            >
+              <Clock
+                size={16}
+                style={{ marginRight: '8px', color: '#3385ad' }}
+              />
+              Anomalie Recenti
+            </h4>
+            <div
+              style={{
+                maxHeight: '200px',
+                overflowY: 'auto',
+                borderRadius: '4px',
+              }}
+            >
+              {filteredAnomalies.length === 0 ? (
+                <div
+                  style={{
+                    padding: '12px',
+                    backgroundColor: '#fff',
+                    color: '#777',
+                    fontStyle: 'italic',
+                    borderRadius: '4px',
+                    textAlign: 'center',
+                  }}
+                >
+                  Nessuna anomalia con il filtro selezionato
+                </div>
+              ) : (
+                filteredAnomalies
+                  .sort((a, b) => b.timestamp - a.timestamp)
+                  .slice(0, 5)
+                  .map((anomaly) => (
+                    <div
+                      key={anomaly.id}
+                      style={{
+                        padding: '12px',
+                        marginBottom: '8px',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        borderLeft: `4px solid ${getSeverityColor(
+                          anomaly.severity
+                        )}`,
+                        backgroundColor:
+                          selectedAnomaly && selectedAnomaly.id === anomaly.id
+                            ? '#f0f7ff'
+                            : '#fff',
+                        boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+                        transition: 'all 0.2s ease',
+                      }}
+                      onClick={() => handleViewDetails(anomaly)}
+                    >
+                      <div
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          marginBottom: '4px',
+                        }}
+                      >
+                        <div
+                          style={{
+                            fontSize: '14px',
+                            fontWeight: '500',
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            display: 'flex',
+                            alignItems: 'center',
+                          }}
+                        >
+                          <AlertTriangle
+                            size={14}
+                            style={{
+                              marginRight: '6px',
+                              color: getSeverityColor(anomaly.severity),
+                            }}
+                          />
+                          {anomaly.title}
+                        </div>
+                        <div
+                          style={{
+                            fontSize: '12px',
+                            color: '#777',
+                            display: 'flex',
+                            alignItems: 'center',
+                          }}
+                        >
+                          <Clock size={12} style={{ marginRight: '4px' }} />
+                          {formatTimestamp(anomaly.timestamp)}
+                        </div>
+                      </div>
+                      <div
+                        style={{
+                          fontSize: '12px',
+                          color: '#666',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          display: 'flex',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <MapPin
+                          size={12}
+                          style={{ marginRight: '4px', color: '#3385ad' }}
+                        />
+                        {anomaly.location}
+                      </div>
+                    </div>
+                  ))
+              )}
+            </div>
+          </div>
+        </div>
 
-              return (
-                <g key={anomaly.id}>
-                  <circle
-                    cx={coords.x}
-                    cy={coords.y}
-                    r='10'
-                    fill={getMarkerColor(anomaly.severity)}
-                    fillOpacity='0.7'
-                    stroke='white'
-                    strokeWidth='2'
-                  >
-                    <title>{`${anomaly.title} - ${anomaly.location}`}</title>
-                  </circle>
-                  <circle
-                    cx={coords.x}
-                    cy={coords.y}
-                    r='5'
-                    fill={getMarkerColor(anomaly.severity)}
-                  />
-                </g>
-              );
-            })}
-          </ItalySVGMap>
-        </MapWrapper>
-
-        {/* Anomaly Location Legend */}
+        {/* Severity legend */}
         <div
           style={{
             display: 'flex',
             justifyContent: 'center',
             flexWrap: 'wrap',
-            gap: '10px',
-            padding: '10px',
+            gap: '15px',
+            padding: '15px',
+            margin: '0 20px 16px',
+            backgroundColor: '#f9f9f9',
+            borderRadius: '8px',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
           }}
         >
-          {anomalies.map((anomaly) => (
+          <div
+            style={{ display: 'flex', alignItems: 'center', fontSize: '14px' }}
+          >
             <div
-              key={anomaly.id}
               style={{
-                display: 'flex',
-                alignItems: 'center',
-                fontSize: '12px',
+                width: '12px',
+                height: '12px',
+                borderRadius: '50%',
+                backgroundColor: '#f44336',
+                marginRight: '8px',
+                boxShadow: '0 0 0 2px rgba(244, 67, 54, 0.2)',
               }}
-            >
-              <div
-                style={{
-                  width: '10px',
-                  height: '10px',
-                  borderRadius: '50%',
-                  backgroundColor: getMarkerColor(anomaly.severity),
-                  marginRight: '5px',
-                }}
-              />
-              {anomaly.location}
-            </div>
-          ))}
+            />
+            Alta Priorità ({stats.high})
+          </div>
+          <div
+            style={{ display: 'flex', alignItems: 'center', fontSize: '14px' }}
+          >
+            <div
+              style={{
+                width: '12px',
+                height: '12px',
+                borderRadius: '50%',
+                backgroundColor: '#ffc107',
+                marginRight: '8px',
+                boxShadow: '0 0 0 2px rgba(255, 193, 7, 0.2)',
+              }}
+            />
+            Media Priorità ({stats.medium})
+          </div>
+          <div
+            style={{ display: 'flex', alignItems: 'center', fontSize: '14px' }}
+          >
+            <div
+              style={{
+                width: '12px',
+                height: '12px',
+                borderRadius: '50%',
+                backgroundColor: '#4caf50',
+                marginRight: '8px',
+                boxShadow: '0 0 0 2px rgba(76, 175, 80, 0.2)',
+              }}
+            />
+            Bassa Priorità ({stats.low})
+          </div>
+        </div>
+
+        {/* Map info message */}
+        <div
+          style={{
+            margin: '0 20px 20px',
+            padding: '12px 16px',
+            backgroundColor: '#e3f2fd',
+            borderRadius: '8px',
+            display: 'flex',
+            alignItems: 'center',
+            fontSize: '14px',
+            color: '#0d47a1',
+            boxShadow: '0 1px 3px rgba(13, 71, 161, 0.1)',
+          }}
+        >
+          <Info size={18} style={{ marginRight: '12px', flexShrink: 0 }} />
+          <div>
+            Questa mappa mostra in tempo reale le anomalie rilevate nella rete
+            elettrica italiana. Fare clic su un punto della mappa per
+            visualizzare i dettagli dell'anomalia.
+          </div>
         </div>
       </Card>
     </Container>
