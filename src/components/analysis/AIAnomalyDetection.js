@@ -50,6 +50,7 @@ const Card = styled.div`
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   margin-bottom: 20px;
   overflow: hidden;
+  scroll-margin-top: 20px;
 `;
 
 const CardHeader = styled.div`
@@ -249,6 +250,77 @@ const MapWrapper = styled.div`
   overflow: hidden;
 `;
 
+// New styled component for Recent Anomalies
+const RecentAnomaliesCard = styled.div`
+  padding: 16px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  margin-bottom: 16px;
+`;
+
+const RecentAnomalyItem = styled.div`
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  margin-bottom: 8px;
+  border-radius: 8px;
+  background-color: white;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  cursor: pointer;
+  border-left: 4px solid ${(props) => props.color};
+  transition: transform 0.2s, box-shadow 0.2s;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+`;
+
+const RecentAnomalySeverity = styled.div`
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: ${(props) => props.color};
+  margin-right: 12px;
+  flex-shrink: 0;
+`;
+
+const RecentAnomalyInfo = styled.div`
+  flex-grow: 1;
+  overflow: hidden;
+`;
+
+const RecentAnomalyTitle = styled.div`
+  font-weight: 500;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+`;
+
+const RecentAnomalyLocation = styled.div`
+  font-size: 12px;
+  color: #666;
+  display: flex;
+  align-items: center;
+  margin-top: 4px;
+`;
+
+const RecentAnomalyTime = styled.div`
+  font-size: 12px;
+  color: #888;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  margin-left: 12px;
+  flex-shrink: 0;
+`;
+
 // Location coordinates for mock data (real Italian geographic coordinates)
 const locationCoordinates = {
   'Sottostazione Milano Ovest': [45.4642, 9.19],
@@ -288,6 +360,7 @@ const AIAnomalyDetection = () => {
   const [markers, setMarkers] = useState({});
   const [mapInitialized, setMapInitialized] = useState(false);
   const mapContainerRef = useRef(null);
+  const mapCardRef = useRef(null);
 
   // Add global animation styles
   useEffect(() => {
@@ -301,6 +374,16 @@ const AIAnomalyDetection = () => {
       
       .spin {
         animation: spin 1s linear infinite;
+      }
+      
+      @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+      }
+      
+      .pulse {
+        animation: pulse 2s ease-in-out infinite;
       }
     `;
     document.head.appendChild(styleElement);
@@ -656,18 +739,28 @@ const AIAnomalyDetection = () => {
     }
   };
 
+  // Updated to navigate to map and display details
   const handleViewDetails = (anomaly) => {
+    // First set the selected anomaly to show details
     setSelectedAnomaly(anomaly);
 
-    // If map and markers are initialized, open the popup for this anomaly
-    if (mapInitialized && markers[anomaly.id]) {
-      markers[anomaly.id].openPopup();
-
-      // Center map on the selected anomaly
-      if (map && anomaly.coordinates) {
-        map.setView(anomaly.coordinates, 8);
-      }
+    // Then scroll to the map card
+    if (mapCardRef.current) {
+      mapCardRef.current.scrollIntoView({ behavior: 'smooth' });
     }
+
+    // Wait for scroll to complete and then handle map operations
+    setTimeout(() => {
+      // If map and markers are initialized, open the popup for this anomaly
+      if (mapInitialized && markers[anomaly.id]) {
+        markers[anomaly.id].openPopup();
+
+        // Center map on the selected anomaly
+        if (map && anomaly.coordinates) {
+          map.setView(anomaly.coordinates, 8);
+        }
+      }
+    }, 500);
   };
 
   // Get severity color for various UI elements
@@ -1576,7 +1669,7 @@ const AIAnomalyDetection = () => {
       )}
 
       {/* Anomaly Map Card */}
-      <Card id='anomaly-map-card'>
+      <Card id='anomaly-map-card' ref={mapCardRef}>
         <CardHeader>
           <CardTitle>
             <IconWrapper>
@@ -1611,18 +1704,11 @@ const AIAnomalyDetection = () => {
             />
           </MapWrapper>
 
-          {/* Recent anomalies list */}
-          <div
-            style={{
-              padding: '16px',
-              backgroundColor: '#f9f9f9',
-              borderRadius: '8px',
-              boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-            }}
-          >
+          {/* Recent anomalies list - REDESIGNED */}
+          <RecentAnomaliesCard>
             <h4
               style={{
-                margin: '0 0 12px 0',
+                margin: '0 0 16px 0',
                 fontSize: '16px',
                 fontWeight: '500',
                 color: '#333',
@@ -1638,9 +1724,10 @@ const AIAnomalyDetection = () => {
             </h4>
             <div
               style={{
-                maxHeight: '200px',
+                maxHeight: '250px',
                 overflowY: 'auto',
                 borderRadius: '4px',
+                padding: '8px 4px',
               }}
             >
               {filteredAnomalies.length === 0 ? (
@@ -1650,8 +1737,9 @@ const AIAnomalyDetection = () => {
                     backgroundColor: '#fff',
                     color: '#777',
                     fontStyle: 'italic',
-                    borderRadius: '4px',
+                    borderRadius: '8px',
                     textAlign: 'center',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
                   }}
                 >
                   Nessuna anomalia con il filtro selezionato
@@ -1661,86 +1749,54 @@ const AIAnomalyDetection = () => {
                   .sort((a, b) => b.timestamp - a.timestamp)
                   .slice(0, 5)
                   .map((anomaly) => (
-                    <div
+                    <RecentAnomalyItem
                       key={anomaly.id}
-                      style={{
-                        padding: '12px',
-                        marginBottom: '8px',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                        borderLeft: `4px solid ${getSeverityColor(
-                          anomaly.severity
-                        )}`,
-                        backgroundColor:
-                          selectedAnomaly && selectedAnomaly.id === anomaly.id
-                            ? '#f0f7ff'
-                            : '#fff',
-                        boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
-                        transition: 'all 0.2s ease',
-                      }}
+                      color={getSeverityColor(anomaly.severity)}
                       onClick={() => handleViewDetails(anomaly)}
+                      className={
+                        selectedAnomaly && selectedAnomaly.id === anomaly.id
+                          ? 'pulse'
+                          : ''
+                      }
                     >
-                      <div
-                        style={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          marginBottom: '4px',
-                        }}
-                      >
-                        <div
-                          style={{
-                            fontSize: '14px',
-                            fontWeight: '500',
-                            whiteSpace: 'nowrap',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            display: 'flex',
-                            alignItems: 'center',
-                          }}
-                        >
-                          <AlertTriangle
-                            size={14}
-                            style={{
-                              marginRight: '6px',
-                              color: getSeverityColor(anomaly.severity),
-                            }}
-                          />
+                      <RecentAnomalySeverity
+                        color={getSeverityColor(anomaly.severity)}
+                      />
+                      <RecentAnomalyInfo>
+                        <RecentAnomalyTitle>
                           {anomaly.title}
-                        </div>
-                        <div
-                          style={{
-                            fontSize: '12px',
-                            color: '#777',
-                            display: 'flex',
-                            alignItems: 'center',
-                          }}
-                        >
-                          <Clock size={12} style={{ marginRight: '4px' }} />
-                          {formatTimestamp(anomaly.timestamp)}
-                        </div>
-                      </div>
-                      <div
-                        style={{
-                          fontSize: '12px',
-                          color: '#666',
-                          whiteSpace: 'nowrap',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          display: 'flex',
-                          alignItems: 'center',
-                        }}
-                      >
-                        <MapPin
-                          size={12}
-                          style={{ marginRight: '4px', color: '#3385ad' }}
-                        />
-                        {anomaly.location}
-                      </div>
-                    </div>
+                          {anomaly.acknowledged && (
+                            <span
+                              style={{
+                                marginLeft: '6px',
+                                fontSize: '11px',
+                                color: '#757575',
+                                backgroundColor: '#f5f5f5',
+                                padding: '2px 5px',
+                                borderRadius: '3px',
+                              }}
+                            >
+                              Riconosciuta
+                            </span>
+                          )}
+                        </RecentAnomalyTitle>
+                        <RecentAnomalyLocation>
+                          <MapPin
+                            size={12}
+                            style={{ marginRight: '4px', color: '#3385ad' }}
+                          />
+                          {anomaly.location}
+                        </RecentAnomalyLocation>
+                      </RecentAnomalyInfo>
+                      <RecentAnomalyTime>
+                        <Clock size={12} style={{ marginRight: '4px' }} />
+                        {formatTimestamp(anomaly.timestamp)}
+                      </RecentAnomalyTime>
+                    </RecentAnomalyItem>
                   ))
               )}
             </div>
-          </div>
+          </RecentAnomaliesCard>
         </div>
 
         {/* Severity legend */}
