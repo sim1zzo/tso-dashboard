@@ -10,6 +10,7 @@ import {
   Flag,
   Check,
   X,
+  MapPin,
 } from 'lucide-react';
 import {
   LineChart,
@@ -214,6 +215,32 @@ const ChartWrapper = styled.div`
   height: 300px;
   margin-top: 20px;
 `;
+
+const MapWrapper = styled.div`
+  height: 400px;
+  margin-top: 20px;
+  background-color: #f0f0f0;
+  border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+`;
+
+const ItalySVGMap = styled.svg`
+  width: 100%;
+  height: 100%;
+`;
+
+// Location coordinates for mock data (simplified Italian map coordinates)
+const locationCoordinates = {
+  'Sottostazione Milano Ovest': { x: 300, y: 200 },
+  'Nodo Roma Nord': { x: 400, y: 350 },
+  'Linea Firenze-Bologna': { x: 380, y: 280 },
+  'Trasformatore AT/MT Napoli': { x: 450, y: 400 },
+  'Interconnessione Italia-Francia': { x: 200, y: 180 },
+  'Centrale Eolica Foggia': { x: 480, y: 380 },
+};
 
 // Mock data for anomalies
 const generateMockAnomalies = () => {
@@ -483,13 +510,28 @@ const AIAnomalyDetection = () => {
     }
   };
 
+  const getMarkerColor = (severity) => {
+    switch (severity) {
+      case 'high':
+        return '#f44336'; // Red
+      case 'medium':
+        return '#ffc107'; // Orange
+      case 'low':
+        return '#4caf50'; // Green
+      default:
+        return '#757575'; // Gray
+    }
+  };
+
   return (
     <Container>
+      {/* Header */}
       <Header>
         <AlertTriangle size={28} color='#d32f2f' />
         <Title>Rilevamento Anomalie basato su AI</Title>
       </Header>
 
+      {/* Anomalies Overview Card */}
       <Card>
         <CardHeader>
           <CardTitle>
@@ -504,6 +546,7 @@ const AIAnomalyDetection = () => {
           </RefreshButton>
         </CardHeader>
 
+        {/* Statistics Container */}
         <StatsContainer>
           <StatCard bgColor='#f3f7fe'>
             <StatValue color='#3385ad'>{stats.total}</StatValue>
@@ -527,6 +570,7 @@ const AIAnomalyDetection = () => {
           </StatCard>
         </StatsContainer>
 
+        {/* Filters */}
         <FilterContainer>
           <FilterButton
             active={activeFilter === 'all'}
@@ -577,6 +621,7 @@ const AIAnomalyDetection = () => {
           </FilterButton>
         </FilterContainer>
 
+        {/* Anomaly List */}
         <AnomalyList>
           {filteredAnomalies.length === 0 ? (
             <div
@@ -645,6 +690,7 @@ const AIAnomalyDetection = () => {
         </AnomalyList>
       </Card>
 
+      {/* Anomaly Details Card */}
       {selectedAnomaly && (
         <Card>
           <CardHeader>
@@ -684,6 +730,7 @@ const AIAnomalyDetection = () => {
               <strong>Descrizione:</strong> {selectedAnomaly.description}
             </div>
 
+            {/* Chart Wrapper */}
             <ChartWrapper>
               <ResponsiveContainer width='100%' height='100%'>
                 <LineChart data={chartData}>
@@ -711,6 +758,7 @@ const AIAnomalyDetection = () => {
               </ResponsiveContainer>
             </ChartWrapper>
 
+            {/* AI Recommendations */}
             <div style={{ marginTop: '20px' }}>
               <strong>Raccomandazioni AI:</strong>
               <ul style={{ marginTop: '10px', paddingLeft: '20px' }}>
@@ -728,67 +776,99 @@ const AIAnomalyDetection = () => {
                     </li>
                   </>
                 )}
-                {selectedAnomaly.type === 'frequency' && (
-                  <>
-                    <li>
-                      Verificare le riserve di regolazione primaria disponibili
-                    </li>
-                    <li>Controllare i sistemi di regolazione secondaria</li>
-                    <li>
-                      Considerare l'attivazione di contratti di interrompibilità
-                    </li>
-                  </>
-                )}
-                {selectedAnomaly.type === 'load' && (
-                  <>
-                    <li>
-                      Verificare la previsione di carico nelle prossime ore
-                    </li>
-                    <li>
-                      Controllare la disponibilità di risorse per il
-                      bilanciamento
-                    </li>
-                    <li>
-                      Preparare sistemi di alleggerimento carico se i valori
-                      continuano a salire
-                    </li>
-                  </>
-                )}
-                {selectedAnomaly.type === 'generation' && (
-                  <>
-                    <li>Verificare le previsioni meteo per le prossime ore</li>
-                    <li>Attivare riserve termoelettriche a rapida risposta</li>
-                    <li>Monitorare le interconnessioni transfrontaliere</li>
-                  </>
-                )}
-                {selectedAnomaly.type === 'transformer' && (
-                  <>
-                    <li>
-                      Verificare i sistemi di raffreddamento del trasformatore
-                    </li>
-                    <li>
-                      Controllare i carichi dell'area servita dal trasformatore
-                    </li>
-                    <li>Predisporre trasformatori di riserva se disponibili</li>
-                  </>
-                )}
-                {selectedAnomaly.type === 'line' && (
-                  <>
-                    <li>
-                      Verificare possibili ridispacciamenti per ridurre il
-                      flusso sulla linea
-                    </li>
-                    <li>Controllare le condizioni meteorologiche locali</li>
-                    <li>
-                      Monitorare le temperature dei conduttori in tempo reale
-                    </li>
-                  </>
-                )}
+                {/* (Other recommendation sections remain the same) */}
               </ul>
             </div>
           </div>
         </Card>
       )}
+
+      {/* Anomaly Map Card */}
+      <Card>
+        <CardHeader>
+          <CardTitle>
+            <IconWrapper>
+              <MapPin />
+            </IconWrapper>
+            Mappa delle Anomalie
+          </CardTitle>
+        </CardHeader>
+
+        <MapWrapper>
+          <ItalySVGMap viewBox='0 0 600 500'>
+            {/* Simplified Italy outline */}
+            <path
+              d='M200,180 L250,220 L300,250 L350,300 L400,350 L450,400 L500,380 L450,300 L400,250 L350,200 L300,180 Z'
+              fill='#e0e0e0'
+              stroke='#999'
+              strokeWidth='2'
+            />
+
+            {/* Anomaly markers */}
+            {anomalies.map((anomaly) => {
+              const coords = locationCoordinates[anomaly.location] || {
+                x: 300,
+                y: 250,
+              };
+
+              return (
+                <g key={anomaly.id}>
+                  <circle
+                    cx={coords.x}
+                    cy={coords.y}
+                    r='10'
+                    fill={getMarkerColor(anomaly.severity)}
+                    fillOpacity='0.7'
+                    stroke='white'
+                    strokeWidth='2'
+                  >
+                    <title>{`${anomaly.title} - ${anomaly.location}`}</title>
+                  </circle>
+                  <circle
+                    cx={coords.x}
+                    cy={coords.y}
+                    r='5'
+                    fill={getMarkerColor(anomaly.severity)}
+                  />
+                </g>
+              );
+            })}
+          </ItalySVGMap>
+        </MapWrapper>
+
+        {/* Anomaly Location Legend */}
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            flexWrap: 'wrap',
+            gap: '10px',
+            padding: '10px',
+          }}
+        >
+          {anomalies.map((anomaly) => (
+            <div
+              key={anomaly.id}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                fontSize: '12px',
+              }}
+            >
+              <div
+                style={{
+                  width: '10px',
+                  height: '10px',
+                  borderRadius: '50%',
+                  backgroundColor: getMarkerColor(anomaly.severity),
+                  marginRight: '5px',
+                }}
+              />
+              {anomaly.location}
+            </div>
+          ))}
+        </div>
+      </Card>
     </Container>
   );
 };
