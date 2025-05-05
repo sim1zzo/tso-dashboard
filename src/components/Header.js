@@ -97,7 +97,7 @@ const SettingsButton = styled.button`
 
 const Header = ({ isAuthenticated, setIsAuthenticated }) => {
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [user, setUser] = useState({ name: 'Simone Izzo', email: 'si.izzo@reply.it', role: 'admin' });
+  const [user, setUser] = useState({ name: '', email: '', role: '' });
   const [showDropdown, setShowDropdown] = useState(false);
   const navigate = useNavigate();
   const authService = new AuthService();
@@ -109,28 +109,64 @@ const Header = ({ isAuthenticated, setIsAuthenticated }) => {
 
   useEffect(() => {
     if (isAuthenticated) {
-      const storedUser = JSON.parse(localStorage.getItem('user')) || { name: 'Simone Izzo', email: 'si.izzo@reply.it', role: 'admin' };
-      // Assicuriamoci che il ruolo sia corretto in base al nome
-      storedUser.role = storedUser.name === 'Simone Izzo' ? 'admin' : 'Standard';
-      setUser(storedUser);
+      // Ottieni le informazioni dell'utente dal servizio di autenticazione
+      const currentUser = authService.getCurrentUser();
+
+      if (currentUser) {
+        // Estrai il nome dal formato email (prendiamo la parte prima del @)
+        const nameParts = currentUser.username.split('@')[0].split('.');
+        const name = nameParts
+          .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+          .join(' ');
+
+        // Mappa il ruolo dell'AuthService al formato utilizzato nell'interfaccia
+        const roleMapping = {
+          Administrator: 'admin',
+          User: 'Standard',
+        };
+
+        // Carica le impostazioni utente personalizzate se esistono
+        const storedUserSettings =
+          JSON.parse(localStorage.getItem('user_settings')) || {};
+
+        // Usa i dati personalizzati se disponibili, altrimenti usa i valori predefiniti
+        setUser({
+          name: storedUserSettings.name || name,
+          email: currentUser.username,
+          role: roleMapping[currentUser.roles[0]] || 'Standard',
+        });
+      }
     }
   }, [isAuthenticated]);
-  
+
   useEffect(() => {
     const handleStorageChange = () => {
-      const storedUser = JSON.parse(localStorage.getItem('user'));
-      if (storedUser) {
-        // Assicuriamoci che il ruolo sia corretto in base al nome
-        storedUser.role = storedUser.name === 'Simone Izzo' ? 'admin' : 'Standard';
-        setUser(storedUser);
+      if (isAuthenticated) {
+        const storedUserSettings = JSON.parse(
+          localStorage.getItem('user_settings')
+        );
+        const currentUser = authService.getCurrentUser();
+
+        if (storedUserSettings && currentUser) {
+          const roleMapping = {
+            Administrator: 'admin',
+            User: 'Standard',
+          };
+
+          setUser({
+            ...user,
+            name: storedUserSettings.name || user.name,
+            role: roleMapping[currentUser.roles[0]] || 'Standard',
+          });
+        }
       }
     };
-  
+
     window.addEventListener('storage', handleStorageChange);
     return () => {
       window.removeEventListener('storage', handleStorageChange);
     };
-  }, []);
+  }, [isAuthenticated, user]);
 
   const handleLogout = () => {
     authService.logout();
@@ -139,7 +175,11 @@ const Header = ({ isAuthenticated, setIsAuthenticated }) => {
   };
 
   const getInitials = (name) => {
-    return name.split(' ').map(n => n[0]).join('').toUpperCase();
+    return name
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase();
   };
 
   const toggleDropdown = () => {
@@ -157,28 +197,41 @@ const Header = ({ isAuthenticated, setIsAuthenticated }) => {
         <Logo src={require('../assets/reply-logo.png')} alt='Reply Logo' />
       </LogoContainer>
       <CurrentTime>
-        <Clock size={18} style={{marginRight: '8px'}} />
-        {currentTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit', hour12: false})}
+        <Clock size={18} style={{ marginRight: '8px' }} />
+        {currentTime.toLocaleTimeString([], {
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: false,
+        })}
       </CurrentTime>
       {isAuthenticated && (
-       <UserInfo>
-       <UserInitials onClick={toggleDropdown}>{getInitials(user.name)}</UserInitials>
-       <LogoutButton onClick={handleLogout}>
-         <LogOut size={18} style={{marginRight: '5px'}} />
-         Logout
-       </LogoutButton>
-       {showDropdown && (
-         <Dropdown>
-           <DropdownItem><strong>Nome:</strong> {user.name}</DropdownItem>
-           <DropdownItem><strong>Email:</strong> {user.email}</DropdownItem>
-           <DropdownItem><strong>Ruolo:</strong> {user.role}</DropdownItem>
-           <SettingsButton onClick={navigateToSettings}>
-             <Settings size={18} style={{marginRight: '5px'}} />
-             Impostazioni
-           </SettingsButton>
-         </Dropdown>
-       )}
-     </UserInfo>
+        <UserInfo>
+          <UserInitials onClick={toggleDropdown}>
+            {getInitials(user.name)}
+          </UserInitials>
+          <LogoutButton onClick={handleLogout}>
+            <LogOut size={18} style={{ marginRight: '5px' }} />
+            Logout
+          </LogoutButton>
+          {showDropdown && (
+            <Dropdown>
+              <DropdownItem>
+                <strong>Nome:</strong> {user.name}
+              </DropdownItem>
+              <DropdownItem>
+                <strong>Email:</strong> {user.email}
+              </DropdownItem>
+              <DropdownItem>
+                <strong>Ruolo:</strong> {user.role}
+              </DropdownItem>
+              <SettingsButton onClick={navigateToSettings}>
+                <Settings size={18} style={{ marginRight: '5px' }} />
+                Impostazioni
+              </SettingsButton>
+            </Dropdown>
+          )}
+        </UserInfo>
       )}
     </HeaderContainer>
   );
