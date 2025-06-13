@@ -16,7 +16,6 @@ const HeaderContainer = styled.header`
 
 const LogoContainer = styled.div`
   display: flex;
-  display: flex;
   align-items: center;
 `;
 
@@ -25,10 +24,24 @@ const Logo = styled.img`
   filter: brightness(0) invert(1);
 `;
 
+const DateTimeContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 1.2rem;
+`;
+
+const CurrentDate = styled.div`
+  font-size: 1rem;
+  margin-bottom: 4px;
+  font-weight: 500;
+`;
+
 const CurrentTime = styled.div`
   font-size: 1.2rem;
   display: flex;
   align-items: center;
+  font-weight: 600;
 `;
 
 const UserInfo = styled.div`
@@ -72,7 +85,7 @@ const Dropdown = styled.div`
   padding: 1.5rem;
   color: #333;
   z-index: 1000;
-  width: 300px; // Aumentato la larghezza
+  width: 300px;
 `;
 
 const DropdownItem = styled.div`
@@ -191,20 +204,36 @@ const Header = ({ isAuthenticated, setIsAuthenticated }) => {
     setShowDropdown(false);
   };
 
+  const formatDate = (date) => {
+    return date.toLocaleDateString('it-IT', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+  };
+
+  const formatTime = (date) => {
+    return date.toLocaleTimeString('it-IT', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false,
+    });
+  };
+
   return (
     <HeaderContainer>
       <LogoContainer>
         <Logo src={require('../assets/reply-logo.png')} alt='Reply Logo' />
       </LogoContainer>
-      <CurrentTime>
-        <Clock size={18} style={{ marginRight: '8px' }} />
-        {currentTime.toLocaleTimeString([], {
-          hour: '2-digit',
-          minute: '2-digit',
-          second: '2-digit',
-          hour12: false,
-        })}
-      </CurrentTime>
+      <DateTimeContainer>
+        <CurrentDate>{formatDate(currentTime)}</CurrentDate>
+        <CurrentTime>
+          <Clock size={18} style={{ marginRight: '8px' }} />
+          {formatTime(currentTime)}
+        </CurrentTime>
+      </DateTimeContainer>
       {isAuthenticated && (
         <UserInfo>
           <UserInitials onClick={toggleDropdown}>
