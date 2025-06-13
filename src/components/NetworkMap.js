@@ -161,7 +161,7 @@ const NetworkMap = () => {
         coordinates: [12.1986, 44.4175], // ✅ Verificate
         voltage: '380/220 kV',
         verified: true,
-        source: 'Terna Official'
+        source: 'Terna Official',
       },
       {
         id: 'perugia',
@@ -220,11 +220,11 @@ const NetworkMap = () => {
       {
         id: 'catanzaro',
         name: 'Catanzaro',
-        coordinates: [16.5574, 38.8920], // 🔧 AGGIORNATE - Coordinate più precise da database ARPACAL
+        coordinates: [16.5574, 38.892], // 🔧 AGGIORNATE - Coordinate più precise da database ARPACAL
         voltage: '380/220 kV',
         verified: true,
         source: 'ARPACAL Database 2024',
-        note: 'Coordinate aggiornate con maggiore precisione'
+        note: 'Coordinate aggiornate con maggiore precisione',
       },
       {
         id: 'messina',
@@ -320,15 +320,15 @@ const NetworkMap = () => {
         coordinates: [12.4964, 41.9028], // ✅ Verificate
         voltage: '380/220 kV',
         verified: true,
-        source: 'Terna Official'
+        source: 'Terna Official',
       },
       {
         id: 'milanoOvest',
         name: 'Milano Ovest',
-        coordinates: [9.1900, 45.4642], // ✅ Verificate - AGGIORNATE
+        coordinates: [9.186626308983438, 45.43700209111254], // ✅ Verificate - AGGIORNATE 45.43700209111254, 9.186626308983438
         voltage: '380/220 kV',
         verified: true,
-        source: 'Terna Official'
+        source: 'Terna Official',
       },
       {
         id: 'torinoSud',
@@ -336,7 +336,7 @@ const NetworkMap = () => {
         coordinates: [7.6869, 45.0703], // ✅ Verificate
         voltage: '380/220 kV',
         verified: true,
-        source: 'Terna Official'
+        source: 'Terna Official',
       },
       {
         id: 'firenzeCasellina',
@@ -344,7 +344,7 @@ const NetworkMap = () => {
         coordinates: [11.2558, 43.7696], // ✅ Verificate
         voltage: '380/220 kV',
         verified: true,
-        source: 'Terna Official'
+        source: 'Terna Official',
       },
       {
         id: 'bolognaOvest',
@@ -352,7 +352,7 @@ const NetworkMap = () => {
         coordinates: [11.3426, 44.4949], // ✅ Verificate
         voltage: '380/220 kV',
         verified: true,
-        source: 'Terna Official'
+        source: 'Terna Official',
       },
       {
         id: 'veneziaFusina',
@@ -360,7 +360,7 @@ const NetworkMap = () => {
         coordinates: [12.3083, 45.4064], // ✅ Verificate
         voltage: '380/220 kV',
         verified: true,
-        source: 'Terna Official'
+        source: 'Terna Official',
       },
       {
         id: 'napoliPatria',
@@ -368,7 +368,7 @@ const NetworkMap = () => {
         coordinates: [14.2681, 40.8518], // ✅ Verificate
         voltage: '380/220 kV',
         verified: true,
-        source: 'Terna Official'
+        source: 'Terna Official',
       },
       {
         id: 'bari',
@@ -376,7 +376,7 @@ const NetworkMap = () => {
         coordinates: [16.8719, 41.1171], // ✅ Verificate
         voltage: '380/220 kV',
         verified: true,
-        source: 'Terna Official'
+        source: 'Terna Official',
       },
       {
         id: 'palermoBellolampo',
@@ -384,7 +384,7 @@ const NetworkMap = () => {
         coordinates: [13.3615, 38.1157], // ✅ Verificate
         voltage: '220 kV',
         verified: true,
-        source: 'Terna Official'
+        source: 'Terna Official',
       },
       {
         id: 'cagliariRumianca',
@@ -392,7 +392,7 @@ const NetworkMap = () => {
         coordinates: [9.1217, 39.2238], // ✅ Verificate
         voltage: '380/220 kV',
         verified: true,
-        source: 'Terna Official'
+        source: 'Terna Official',
       },
       {
         id: 'Olbia',
@@ -406,7 +406,7 @@ const NetworkMap = () => {
         coordinates: [8.9463, 44.4056], // ✅ Verificate
         voltage: '380/220 kV',
         verified: true,
-        source: 'Terna Official'
+        source: 'Terna Official',
       },
       {
         id: 'laSpezia',
@@ -426,7 +426,7 @@ const NetworkMap = () => {
         coordinates: [13.2306, 46.064], // ✅ Verificate
         voltage: '380/220 kV',
         verified: true,
-        source: 'Progetto autorizzato MASE'
+        source: 'Progetto autorizzato MASE',
       },
       {
         id: 'foggia',
@@ -434,7 +434,7 @@ const NetworkMap = () => {
         coordinates: [15.5444, 41.4621], // ✅ Verificate
         voltage: '380/220 kV',
         verified: true,
-        source: 'Terna Official'
+        source: 'Terna Official',
       },
 
       // === STAZIONI AGGIUNTIVE ===
@@ -468,7 +468,7 @@ const NetworkMap = () => {
         coordinates: [11.4048, 44.54], // ✅ Riferimento progetto Colunga-Calenzano
         voltage: '380/220 kV',
         verified: true,
-        source: 'MASE VIA Database'
+        source: 'MASE VIA Database',
       },
       {
         id: 'villavalle',
@@ -483,7 +483,7 @@ const NetworkMap = () => {
         voltage: '380/220 kV',
         verified: true,
         source: 'ARPACAL Database 2024',
-        note: 'Coordinate aggiornate per Corigliano-Rossano'
+        note: 'Coordinate aggiornate per Corigliano-Rossano',
       },
       {
         id: 'sorgente',
@@ -510,7 +510,7 @@ const NetworkMap = () => {
           [11.3426, 44.4949], // Bologna Ovest ✅
           [12.1986, 44.4175], // Ravenna ✅
         ],
-        verified: true
+        verified: true,
       },
       {
         id: 'ravenna-perugia-380kV',
@@ -564,9 +564,9 @@ const NetworkMap = () => {
         voltage: 380,
         coordinates: [
           [12.4964, 41.9028], // Roma Nord ✅
-          [9.4889, 40.9231],   // Olbia
+          [9.4889, 40.9231], // Olbia
         ],
-        verified: true
+        verified: true,
       },
       {
         id: 'campobasso-avellino-380kV',
@@ -598,9 +598,9 @@ const NetworkMap = () => {
         voltage: 380,
         coordinates: [
           [12.1986, 44.4175], // Ravenna ✅
-          [13.5136, 43.6158],  // Ancona
+          [13.5136, 43.6158], // Ancona
         ],
-        verified: true
+        verified: true,
       },
       {
         id: 'ancona-foggia-380kV',
@@ -609,10 +609,10 @@ const NetworkMap = () => {
         to: 'foggia',
         voltage: 380,
         coordinates: [
-          [13.5136, 43.6158],  // Ancona
-          [15.5444, 41.4621],  // Foggia ✅
+          [13.5136, 43.6158], // Ancona
+          [15.5444, 41.4621], // Foggia ✅
         ],
-        verified: true
+        verified: true,
       },
       {
         id: 'foggia-potenza-380kV',
@@ -624,7 +624,7 @@ const NetworkMap = () => {
           [15.5444, 41.4621], // Foggia ✅
           [15.8056, 40.6404], // Potenza
         ],
-        verified: true
+        verified: true,
       },
 
       // === LINEE 220 kV ===
@@ -638,7 +638,7 @@ const NetworkMap = () => {
           [7.6869, 45.0703], // Torino Sud ✅
           [7.3201, 45.7349], // Aosta
         ],
-        verified: true
+        verified: true,
       },
       {
         id: 'milano-bergamo-220kV',
@@ -647,10 +647,10 @@ const NetworkMap = () => {
         to: 'bergamo',
         voltage: 220,
         coordinates: [
-          [9.1900, 45.4642], // Milano Ovest ✅ AGGIORNATE
+          [9.19, 45.4642], // Milano Ovest ✅ AGGIORNATE
           [9.6773, 45.6983], // Bergamo
         ],
-        verified: true
+        verified: true,
       },
       {
         id: 'verona-trento-220kV',
@@ -673,7 +673,7 @@ const NetworkMap = () => {
           [11.3426, 44.4949], // Bologna Ovest ✅
           [11.6193, 44.8378], // Ferrara
         ],
-        verified: true
+        verified: true,
       },
       {
         id: 'firenze-siena-220kV',
@@ -685,7 +685,7 @@ const NetworkMap = () => {
           [11.2558, 43.7696], // Firenze Casellina ✅
           [11.3306, 43.3189], // Siena
         ],
-        verified: true
+        verified: true,
       },
       {
         id: 'roma-viterbo-220kV',
@@ -697,7 +697,7 @@ const NetworkMap = () => {
           [12.4964, 41.9028], // Roma Nord ✅
           [12.1048, 42.4173], // Viterbo
         ],
-        verified: true
+        verified: true,
       },
       {
         id: 'napoli-salerno-220kV',
@@ -709,7 +709,7 @@ const NetworkMap = () => {
           [14.2681, 40.8518], // Napoli Patria ✅
           [14.7595, 40.6824], // Salerno
         ],
-        verified: true
+        verified: true,
       },
       {
         id: 'bari-taranto-220kV',
@@ -721,7 +721,7 @@ const NetworkMap = () => {
           [16.8719, 41.1171], // Bari ✅
           [17.2417, 40.4645], // Taranto
         ],
-        verified: true
+        verified: true,
       },
       {
         id: 'catania-messina-220kV',
@@ -744,7 +744,7 @@ const NetworkMap = () => {
           [9.1217, 39.2238], // Cagliari Rumianca ✅
           [8.5919, 39.9062], // Oristano
         ],
-        verified: true
+        verified: true,
       },
 
       // === LINEE DORSALE ADRIATICA 380 kV ===
@@ -767,10 +767,10 @@ const NetworkMap = () => {
         voltage: 380,
         coordinates: [
           [15.8056, 40.6404], // Potenza
-          [16.5574, 38.8920], // Catanzaro 🔧 AGGIORNATE
+          [16.5574, 38.892], // Catanzaro 🔧 AGGIORNATE
         ],
         verified: true,
-        note: 'Coordinate Catanzaro aggiornate'
+        note: 'Coordinate Catanzaro aggiornate',
       },
 
       // === DORSALE SICILIANA 380 kV ===
@@ -817,7 +817,7 @@ const NetworkMap = () => {
           [12.514, 38.0173],
           [13.3615, 38.1157], // Palermo Bellolampo ✅
         ],
-        verified: true
+        verified: true,
       },
 
       // === DORSALE TIRRENICA 380 kV ===
@@ -828,10 +828,10 @@ const NetworkMap = () => {
         to: 'firenzeCasellina',
         voltage: 380,
         coordinates: [
-          [9.1900, 45.4642], // Milano Ovest ✅ AGGIORNATE
+          [9.19, 45.4642], // Milano Ovest ✅ AGGIORNATE
           [11.2558, 43.7696], // Firenze Casellina ✅
         ],
-        verified: true
+        verified: true,
       },
 
       {
@@ -841,10 +841,10 @@ const NetworkMap = () => {
         to: 'genova',
         voltage: 220,
         coordinates: [
-          [9.1900, 45.4642], // Milano Ovest ✅ AGGIORNATE
+          [9.19, 45.4642], // Milano Ovest ✅ AGGIORNATE
           [8.9463, 44.4056], // Genova ✅
         ],
-        verified: true
+        verified: true,
       },
       {
         id: 'torinoSud-genova-220kV',
@@ -856,7 +856,7 @@ const NetworkMap = () => {
           [7.6869, 45.0703], // Torino Sud ✅
           [8.9463, 44.4056], // Genova ✅
         ],
-        verified: true
+        verified: true,
       },
 
       {
@@ -866,10 +866,10 @@ const NetworkMap = () => {
         to: 'torinoSud',
         voltage: 380,
         coordinates: [
-          [9.1900, 45.4642], // Milano Ovest ✅ AGGIORNATE
+          [9.19, 45.4642], // Milano Ovest ✅ AGGIORNATE
           [7.6869, 45.0703], // Torino Sud ✅
         ],
-        verified: true
+        verified: true,
       },
       {
         id: 'milanoOvest-piacenza-380kV',
@@ -878,10 +878,10 @@ const NetworkMap = () => {
         to: 'piacenza',
         voltage: 380,
         coordinates: [
-          [9.1900, 45.4642], // Milano Ovest ✅ AGGIORNATE
-          [9.693, 45.0526],   // Piacenza
+          [9.19, 45.4642], // Milano Ovest ✅ AGGIORNATE
+          [9.693, 45.0526], // Piacenza
         ],
-        verified: true
+        verified: true,
       },
       {
         id: 'torinoSud-rondissone-380kV',
@@ -893,7 +893,7 @@ const NetworkMap = () => {
           [7.6869, 45.0703], // Torino Sud ✅
           [7.8581, 45.2328], // Rondissone
         ],
-        verified: true
+        verified: true,
       },
       {
         id: 'rondissone-genova-380kV',
@@ -905,7 +905,7 @@ const NetworkMap = () => {
           [7.8581, 45.2328], // Rondissone
           [8.9463, 44.4056], // Genova ✅
         ],
-        verified: true
+        verified: true,
       },
       {
         id: 'genova-laSpezia-380kV',
@@ -915,9 +915,9 @@ const NetworkMap = () => {
         voltage: 380,
         coordinates: [
           [8.9463, 44.4056], // Genova ✅
-          [9.824, 44.1024],  // La Spezia
+          [9.824, 44.1024], // La Spezia
         ],
-        verified: true
+        verified: true,
       },
       {
         id: 'laSpezia-firenzeCasellina-380kV',
@@ -926,10 +926,10 @@ const NetworkMap = () => {
         to: 'firenzeCasellina',
         voltage: 380,
         coordinates: [
-          [9.824, 44.1024],   // La Spezia
+          [9.824, 44.1024], // La Spezia
           [11.2558, 43.7696], // Firenze Casellina ✅
         ],
-        verified: true
+        verified: true,
       },
       {
         id: 'firenzeCasellina-romaNord-380kV',
@@ -941,7 +941,7 @@ const NetworkMap = () => {
           [11.2558, 43.7696], // Firenze Casellina ✅
           [12.4964, 41.9028], // Roma Nord ✅
         ],
-        verified: true
+        verified: true,
       },
       {
         id: 'romaNord-napoliPatria-380kV',
@@ -953,7 +953,7 @@ const NetworkMap = () => {
           [12.4964, 41.9028], // Roma Nord ✅
           [14.2681, 40.8518], // Napoli Patria ✅
         ],
-        verified: true
+        verified: true,
       },
       {
         id: 'napoliPatria-foggia-380kV',
@@ -965,7 +965,7 @@ const NetworkMap = () => {
           [14.2681, 40.8518], // Napoli Patria ✅
           [15.5444, 41.4621], // Foggia ✅
         ],
-        verified: true
+        verified: true,
       },
       {
         id: 'foggia-bari-380kV',
@@ -977,7 +977,7 @@ const NetworkMap = () => {
           [15.5444, 41.4621], // Foggia ✅
           [16.8719, 41.1171], // Bari ✅
         ],
-        verified: true
+        verified: true,
       },
       {
         id: 'bari-rossano-380kV',
@@ -990,7 +990,7 @@ const NetworkMap = () => {
           [16.4896, 39.6475], // Rossano 🔧 AGGIORNATE
         ],
         verified: true,
-        note: 'Coordinate Rossano aggiornate'
+        note: 'Coordinate Rossano aggiornate',
       },
       {
         id: 'rossano-rizziconi-380kV',
@@ -1003,7 +1003,7 @@ const NetworkMap = () => {
           [15.9637, 38.4115], // Rizziconi
         ],
         verified: true,
-        note: 'Coordinate Rossano aggiornate'
+        note: 'Coordinate Rossano aggiornate',
       },
       {
         id: 'rizziconi-sorgente-380kV',
@@ -1025,10 +1025,10 @@ const NetworkMap = () => {
         to: 'veneziaFusina',
         voltage: 380,
         coordinates: [
-          [9.1900, 45.4642], // Milano Ovest ✅ AGGIORNATE
+          [9.19, 45.4642], // Milano Ovest ✅ AGGIORNATE
           [12.3083, 45.4064], // Venezia Fusina ✅
         ],
-        verified: true
+        verified: true,
       },
       {
         id: 'veneziaFusina-padova-380kV',
@@ -1040,7 +1040,7 @@ const NetworkMap = () => {
           [12.3083, 45.4064], // Venezia Fusina ✅
           [11.8768, 45.4064], // Padova
         ],
-        verified: true
+        verified: true,
       },
       {
         id: 'padova-udine-380kV',
@@ -1050,9 +1050,9 @@ const NetworkMap = () => {
         voltage: 380,
         coordinates: [
           [11.8768, 45.4064], // Padova
-          [13.2306, 46.064],  // Udine Ovest ✅
+          [13.2306, 46.064], // Udine Ovest ✅
         ],
-        verified: true
+        verified: true,
       },
       {
         id: 'bolognaOvest-dolo-380kV',
@@ -1064,7 +1064,7 @@ const NetworkMap = () => {
           [11.3426, 44.4949], // Bologna Ovest ✅
           [12.0823, 45.4279], // Dolo
         ],
-        verified: true
+        verified: true,
       },
       {
         id: 'bolognaOvest-colunga-380kV',
@@ -1074,9 +1074,9 @@ const NetworkMap = () => {
         voltage: 380,
         coordinates: [
           [11.3426, 44.4949], // Bologna Ovest ✅
-          [11.4048, 44.54],   // Colunga ✅
+          [11.4048, 44.54], // Colunga ✅
         ],
-        verified: true
+        verified: true,
       },
       {
         id: 'romaNord-firenzeCasellina-220kV',
@@ -1088,7 +1088,7 @@ const NetworkMap = () => {
           [12.4964, 41.9028], // Roma Nord ✅
           [11.2558, 43.7696], // Firenze Casellina ✅
         ],
-        verified: true
+        verified: true,
       },
       {
         id: 'napoliPatria-romaNord-220kV',
@@ -1100,7 +1100,7 @@ const NetworkMap = () => {
           [14.2681, 40.8518], // Napoli Patria ✅
           [12.4964, 41.9028], // Roma Nord ✅
         ],
-        verified: true
+        verified: true,
       },
 
       // === COLLEGAMENTO SARDEGNA-SICILIA 380 kV ===
@@ -1112,11 +1112,11 @@ const NetworkMap = () => {
         voltage: 380,
         coordinates: [
           [13.3615, 38.1157], // Palermo Bellolampo ✅
-          [9.1217, 39.2238],  // Cagliari Rumianca ✅
+          [9.1217, 39.2238], // Cagliari Rumianca ✅
         ],
         verified: true,
         type: 'submarine_cable',
-        note: 'Collegamento sottomarino SAPEI'
+        note: 'Collegamento sottomarino SAPEI',
       },
       {
         id: 'rossano-bari-220kV',
@@ -1129,7 +1129,7 @@ const NetworkMap = () => {
           [16.8719, 41.1171], // Bari ✅
         ],
         verified: true,
-        note: 'Coordinate Rossano aggiornate'
+        note: 'Coordinate Rossano aggiornate',
       },
       {
         id: 'sorgente-rizziconi-220kV',
@@ -1153,7 +1153,7 @@ const NetworkMap = () => {
         capacity: 1980,
         coordinates: [11.7992, 42.0944],
         fuel: 'carbone',
-        status: 'active'
+        status: 'active',
       },
       {
         id: 'entracque',
@@ -1162,7 +1162,7 @@ const NetworkMap = () => {
         capacity: 1065,
         coordinates: [7.4336, 44.1995],
         subtype: 'pumped_storage',
-        status: 'active'
+        status: 'active',
       },
       {
         id: 'larderello',
@@ -1170,7 +1170,7 @@ const NetworkMap = () => {
         type: 'Geotermica',
         capacity: 769,
         coordinates: [10.8715, 43.259],
-        status: 'active'
+        status: 'active',
       },
       {
         id: 'troia',
@@ -1178,7 +1178,7 @@ const NetworkMap = () => {
         type: 'Eolica',
         capacity: 30,
         coordinates: [15.3269, 41.4374],
-        status: 'active'
+        status: 'active',
       },
       {
         id: 'montalto',
@@ -1186,7 +1186,7 @@ const NetworkMap = () => {
         type: 'Solare',
         capacity: 45,
         coordinates: [11.6065, 42.325],
-        status: 'active'
+        status: 'active',
       },
       {
         id: 'brindisiSud',
@@ -1195,7 +1195,7 @@ const NetworkMap = () => {
         capacity: 2640,
         coordinates: [18.0167, 40.6524],
         fuel: 'carbone',
-        status: 'active'
+        status: 'active',
       },
       {
         id: 'laSpezia',
@@ -1204,7 +1204,7 @@ const NetworkMap = () => {
         capacity: 1280,
         coordinates: [9.824, 44.1024],
         fuel: 'gas',
-        status: 'active'
+        status: 'active',
       },
       {
         id: 'presenzano',
@@ -1213,7 +1213,7 @@ const NetworkMap = () => {
         capacity: 1000,
         coordinates: [14.1465, 41.3703],
         subtype: 'pumped_storage',
-        status: 'active'
+        status: 'active',
       },
     ],
 
@@ -1226,7 +1226,7 @@ const NetworkMap = () => {
         country: 'Francia',
         voltage: '380 kV',
         verified: true,
-        status: 'active'
+        status: 'active',
       },
       {
         id: 'gorlago',
@@ -1235,7 +1235,7 @@ const NetworkMap = () => {
         country: 'Svizzera',
         voltage: '380 kV',
         verified: true,
-        status: 'active'
+        status: 'active',
       },
       {
         id: 'redipuglia',
@@ -1245,7 +1245,7 @@ const NetworkMap = () => {
         voltage: '380 kV',
         verified: true,
         status: 'in_construction',
-        note: 'Collegamento Udine Ovest-Redipuglia in costruzione'
+        note: 'Collegamento Udine Ovest-Redipuglia in costruzione',
       },
       {
         id: 'villaTirano',
@@ -1254,7 +1254,7 @@ const NetworkMap = () => {
         country: 'Svizzera',
         voltage: '220 kV',
         verified: true,
-        status: 'active'
+        status: 'active',
       },
       {
         id: 'pinciana',
@@ -1262,7 +1262,7 @@ const NetworkMap = () => {
         coordinates: [14.33, 47.33],
         country: 'Austria',
         voltage: '220 kV',
-        status: 'planned'
+        status: 'planned',
       },
     ],
 
@@ -1275,7 +1275,7 @@ const NetworkMap = () => {
         'Terna Official Documentation',
         'ARPACAL Regional Database 2024',
         'MASE VIA Authorization Database',
-        'GSE Primary Substation Map'
+        'GSE Primary Substation Map',
       ],
       totalSubstations: 49,
       totalLines: 49,
@@ -1285,8 +1285,8 @@ const NetworkMap = () => {
       updatedCoordinates: 3,
       coverage: 'National Italian Transmission Grid',
       voltageClass: ['380 kV', '220 kV', '150 kV'],
-      note: 'Coordinate verificate attraverso fonti ufficiali Terna, database regionali e documenti autorizzativi MASE'
-    }
+      note: 'Coordinate verificate attraverso fonti ufficiali Terna, database regionali e documenti autorizzativi MASE',
+    },
   });
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [selectedElement, setSelectedElement] = useState(null);
