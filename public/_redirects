@@ -1,0 +1,25 @@
+# Redirects file for TSO Dashboard - Netlify deployment
+# This file should be placed in the public/ folder
+
+# Main SPA redirect rule - handles all client-side routing
+# This must be the last rule to catch all unmatched routes
+/*    /index.html   200
+
+# Optional: Force redirect from root to home page
+# Uncomment the line below if you want to automatically redirect / to /home
+# /    /home    302
+
+# Optional: Redirect old URLs to new ones (examples)
+# Uncomment and modify these if you have old URLs to redirect
+# /old-dashboard    /dashboard    301
+# /legacy/*         /analisi/:splat    301
+
+# Optional: API proxy redirects (if you have external APIs)
+# Uncomment and modify if you need to proxy API calls
+# /api/*    https://your-backend-api.com/api/:splat    200
+
+# Security headers and cache control (optional)
+# These can be added in netlify.toml instead if preferred
+/favicon.ico    /favicon.ico    200
+/manifest.json  /manifest.json  200
+/robots.txt     /robots.txt     200

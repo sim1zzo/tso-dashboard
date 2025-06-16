@@ -1,0 +1,70 @@
+# Netlify configuration file for TSO Dashboard
+# This file should be placed in the root directory of your project
+
+[build]
+  # Directory where npm run build outputs the built site
+  publish = "build"
+  
+  # Build command
+  command = "npm run build"
+
+# Build settings
+[build.environment]
+  # Node.js version (optional - Netlify will use a recent version by default)
+  NODE_VERSION = "18"
+
+# Headers for better security and performance
+[[headers]]
+  for = "/*"
+  [headers.values]
+    # Security headers
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    
+    # Cache control for static assets
+    Cache-Control = "public, max-age=31536000"
+
+# Special cache control for the main HTML file
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+# Cache control for service worker (if you add one later)
+[[headers]]
+  for = "/service-worker.js"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+# Redirects (alternative to _redirects file - choose one method)
+# You can use this instead of the _redirects file if you prefer
+# [[redirects]]
+#   from = "/*"
+#   to = "/index.html"
+#   status = 200
+
+# Optional: Environment-specific redirects
+# [[redirects]]
+#   from = "/api/*"
+#   to = "https://your-production-api.com/api/:splat"
+#   status = 200
+#   force = true
+
+# Optional: Redirect old URLs
+# [[redirects]]
+#   from = "/old-dashboard"
+#   to = "/dashboard"
+#   status = 301
+
+# Form handling (if you add contact forms later)
+# [forms]
+#   [forms.contact]
+#     name = "Contact Form"
+#     action = "/success"
+#     method = "POST"
+
+# Function settings (if you add Netlify Functions later)
+# [functions]
+#   directory = "netlify/functions"
