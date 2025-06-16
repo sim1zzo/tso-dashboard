@@ -50,7 +50,7 @@ const Home = () => {
           </SmallChartContainer>
         </SecondaryChartsContainer>
         <MainChartContainer>
-          <PVPCvsMarketPriceChart />
+          {/* <PVPCvsMarketPriceChart /> */}
         </MainChartContainer>
       </ChartGrid>
     </HomeContainer>
