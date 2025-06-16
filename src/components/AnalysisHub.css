@@ -1,10 +1,14 @@
-/* AnalysisHub.css - Versione sicura */
+/* src/components/AnalysisHub.css - VERSIONE AGGIORNATA CON TAB VISIBILI */
 
 .hub-container {
   font-family: Arial, sans-serif;
   padding: 0;
   background-color: #fff;
-  /* RIMOSSO: height: 100%; che causava problemi */
+  max-height: 100%;
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .hub-container h1 {
@@ -12,42 +16,275 @@
   font-weight: bold;
   color: #333;
   margin: 0;
-  padding: 15px 20px;
+  padding: 20px 24px;
+  flex-shrink: 0;
+  border-bottom: 2px solid #e9ecef;
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .tab-container {
   display: flex;
   flex-direction: column;
+  flex-shrink: 0;
+  background-color: #fff;
+  border-bottom: 2px solid #e0e0e0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  padding: 8px 16px 0 16px;
 }
 
 .tab-row {
   display: flex;
   flex-wrap: wrap;
+  padding: 8px 0;
+  gap: 8px;
+  min-height: 50px;
+  align-items: center;
 }
 
 .tab-button {
-  padding: 8px 16px;
-  margin: 2px;
-  border: none;
-  background-color: #f0f0f0;
+  padding: 12px 20px;
+  margin: 4px;
+  border: 2px solid #e9ecef;
+  background-color: #f8f9fa;
   font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.3s ease;
   white-space: nowrap;
+  border-radius: 25px;
+  color: #6c757d;
+  flex-shrink: 0;
+  position: relative;
+  min-width: 140px;
+  text-align: center;
+
+  /* Migliorare la visibilità */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 12px;
 }
 
 .tab-button:hover {
-  background-color: #e0e0e0;
+  background-color: #e2e6ea;
+  border-color: #007bff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 123, 255, 0.2);
+  color: #007bff;
 }
 
 .tab-button.active {
-  background-color: #0d6efd;
+  background: linear-gradient(135deg, #007bff, #0056b3);
   color: white;
+  border-color: #0056b3;
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.4);
+  font-weight: 700;
+  transform: translateY(-1px);
+}
+
+.tab-button.active::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(135deg, #007bff, #0056b3, #28a745);
+  border-radius: 25px;
+  z-index: -1;
+  animation: glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+  from {
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.4);
+  }
+  to {
+    box-shadow: 0 0 15px rgba(0, 123, 255, 0.8);
+  }
+}
+
+.tab-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.3);
 }
 
 .content-area {
-  padding: 20px;
-  border-top: 1px solid #e0e0e0;
-  margin-top: 10px;
-  /* RIMOSSO: height e flex che causavano problemi */
+  padding: 24px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  max-height: calc(100vh - 200px);
+  background-color: #f8f9fa;
+  scrollbar-width: thin;
+  scrollbar-color: #c1c1c1 #f1f1f1;
+}
+
+/* Webkit scrollbar styling */
+.content-area::-webkit-scrollbar {
+  width: 8px;
+}
+
+.content-area::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.content-area::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+.content-area::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Assicurarsi che tutti i componenti figli rispettino i limiti */
+.content-area > * {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Fix per tabelle che potrebbero essere troppo larghe */
+.content-area table {
+  max-width: 100%;
+  table-layout: fixed;
+  word-wrap: break-word;
+}
+
+/* Fix per immagini e media */
+.content-area img,
+.content-area video,
+.content-area iframe {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Responsive design per i tab */
+@media (max-width: 768px) {
+  .hub-container h1 {
+    font-size: 20px;
+    padding: 16px 20px;
+  }
+
+  .tab-row {
+    justify-content: flex-start;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 12px;
+  }
+
+  .tab-button {
+    min-width: 120px;
+    padding: 10px 16px;
+    font-size: 11px;
+    margin: 2px;
+  }
+
+  .content-area {
+    padding: 16px;
+    max-height: calc(100vh - 180px);
+  }
+}
+
+@media (max-width: 480px) {
+  .tab-button {
+    min-width: 100px;
+    padding: 8px 12px;
+    font-size: 10px;
+  }
+
+  .content-area {
+    padding: 12px;
+    max-height: calc(100vh - 160px);
+  }
+}
+
+/* Indicatore per tab overflow */
+.tab-row::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 20px;
+  background: linear-gradient(to right, transparent, rgba(248, 249, 250, 0.8));
+  pointer-events: none;
+}
+
+/* Stati speciali dei tab */
+.tab-button[data-important='true'] {
+  background: linear-gradient(135deg, #28a745, #20c997);
+  color: white;
+  border-color: #28a745;
+}
+
+.tab-button[data-important='true']:hover {
+  background: linear-gradient(135deg, #218838, #1e7e34);
+  transform: translateY(-3px);
+}
+
+/* Animazioni di caricamento */
+.content-area.loading {
+  position: relative;
+}
+
+.content-area.loading::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.9);
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.content-area.loading::after {
+  content: 'Caricamento componente...';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+  font-size: 16px;
+  color: #007bff;
+  font-weight: 600;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .tab-button {
+    border: 2px solid #000;
+  }
+
+  .tab-button.active {
+    border: 3px solid #000;
+  }
+
+  .content-area {
+    border: 1px solid #000;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .tab-button,
+  .content-area {
+    transition: none;
+  }
+
+  .tab-button:hover {
+    transform: none;
+  }
+
+  .tab-button.active::before {
+    animation: none;
+  }
 }

@@ -54,14 +54,37 @@ header {
   flex: 1;
 }
 
-/* FIX CRITICO: Previeni che l'AnalysisHub spinga tutto verso il basso */
-.hub-container {
-  max-height: calc(100vh - 140px); /* Limita l'altezza */
-  overflow-y: auto; /* Permetti scroll interno */
+/* FIX CRITICO per la sidebar sempre visibile */
+.main-content {
+  display: flex;
+  flex: 1;
+  height: calc(100vh - 60px);
+  /* FIX: Impedire overflow che nasconde la sidebar */
+  overflow: hidden !important;
 }
 
-/* Se hai ancora problemi, aggiungi questo */
-.central-area {
-  overflow-y: auto;
-  max-height: calc(100vh - 60px);
+/* FIX per l'AnalysisHub che non deve coprire la sidebar */
+.hub-container {
+  max-height: calc(100vh - 140px) !important;
+  overflow: hidden !important;
+  /* FIX CRITICO: Non espandere oltre i confini */
+  width: 100% !important;
+  position: relative !important;
+}
+
+/* FIX per tutti i componenti che potrebbero nascondere la sidebar */
+.central-area,
+.content-area {
+  overflow-y: auto !important;
+  max-height: calc(100vh - 60px) !important;
+  /* FIX: Non espandere lateralmente */
+  max-width: 100% !important;
+}
+
+/* FIX specifico per evitare che componenti si sovrappongano alla sidebar */
+.analysis-component,
+.predictive-maintenance,
+.ai-grid-assistant {
+  max-width: 100% !important;
+  overflow-x: hidden !important;
 }

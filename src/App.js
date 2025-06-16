@@ -1,9 +1,10 @@
+// src/App.js - FILE COMPLETO CORRETTO
+
 import React, { useState, useEffect } from 'react';
 import {
   BrowserRouter as Router,
   Route,
   Routes,
-  Switch,
   Navigate,
   useLocation,
 } from 'react-router-dom';
@@ -41,24 +42,19 @@ const MainContent = styled.main`
   display: flex;
   flex-grow: 1;
   overflow: hidden;
-  height: calc(100vh - 60px); /* Sottrai l'altezza dell'header */
+  height: calc(100vh - 60px);
 `;
 
 const CentralArea = styled.div`
   flex-grow: 1;
   padding: 20px;
   overflow-y: auto;
-  height: 100vh; /* Altezza fissa */
+  height: 100%;
   position: relative;
   display: flex;
   flex-direction: column;
+  min-height: 0;
 `;
-
-// const TabContainer = styled.div`
-//   display: flex;
-//   flex-direction: column;
-//   height: 100%;
-// `;
 
 const TabButtons = styled.div`
   display: flex;
@@ -74,11 +70,6 @@ const TabButton = styled.button`
     background-color: #e0e0e0;
   }
 `;
-
-// const TabContent = styled.div`
-//   flex-grow: 1;
-//   overflow-y: auto;
-// `;
 
 const DashboardContainer = styled.div`
   padding: 20px;
@@ -121,7 +112,7 @@ function App() {
         return <ReportingPanel />;
       case 'activeAlarm':
         return <AlarmPanel />;
-      case 'rawData': // Nuovo caso
+      case 'rawData':
         return <RawDataPanel />;
       default:
         return <NetworkMap />;
