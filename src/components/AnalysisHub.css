@@ -1,9 +1,10 @@
-/* AnalysisHub.css */
+/* AnalysisHub.css - Versione sicura */
 
 .hub-container {
   font-family: Arial, sans-serif;
   padding: 0;
   background-color: #fff;
+  /* RIMOSSO: height: 100%; che causava problemi */
 }
 
 .hub-container h1 {
@@ -48,4 +49,5 @@
   padding: 20px;
   border-top: 1px solid #e0e0e0;
   margin-top: 10px;
+  /* RIMOSSO: height e flex che causavano problemi */
 }

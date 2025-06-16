@@ -41,12 +41,17 @@ const MainContent = styled.main`
   display: flex;
   flex-grow: 1;
   overflow: hidden;
+  height: calc(100vh - 60px); /* Sottrai l'altezza dell'header */
 `;
 
 const CentralArea = styled.div`
   flex-grow: 1;
   padding: 20px;
   overflow-y: auto;
+  height: 100vh; /* Altezza fissa */
+  position: relative;
+  display: flex;
+  flex-direction: column;
 `;
 
 // const TabContainer = styled.div`
@@ -83,8 +88,6 @@ const DashboardTitle = styled.h1`
   font-size: 24px;
   margin-bottom: 20px;
 `;
-
-
 
 function App() {
   const [activeTab, setActiveTab] = useState('map');
