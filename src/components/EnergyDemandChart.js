@@ -37,7 +37,7 @@ const ModernEnergyDemandChart = () => {
     { time: '06:00', real: 27.2, scheduled: 27.5, forecasted: 27.8 },
     { time: '07:00', real: 31.8, scheduled: 32.0, forecasted: 32.2 },
     { time: '08:00', real: 35.4, scheduled: 35.2, forecasted: 35.6 },
-    { time: '09:00', real: 36.5, scheduled: 36.3, forecasted: 36.7 }, // ORA CORRENTE
+    { time: '09:00', real: 36.5, scheduled: 36.3, forecasted: 36.7 },
     { time: '10:00', real: 38.2, scheduled: 38.0, forecasted: 38.4 },
     { time: '11:00', real: 39.8, scheduled: 39.5, forecasted: 40.0 },
     { time: '12:00', real: 41.2, scheduled: 41.0, forecasted: 41.4 },
@@ -54,8 +54,10 @@ const ModernEnergyDemandChart = () => {
     { time: '23:00', real: 33.1, scheduled: 32.8, forecasted: 33.3 },
   ];
 
-  const currentHour = 9; // Simula le 09:04 come nell'immagine
-  const currentDataPoint = data[currentHour];
+  // Calcola l'ora corrente dinamicamente
+  const currentHour = currentTime.getHours();
+  const currentTimeFormatted = `${currentHour.toString().padStart(2, '0')}:00`;
+  const currentDataPoint = data[currentHour] || data[0];
 
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
@@ -130,279 +132,229 @@ const ModernEnergyDemandChart = () => {
       style={{
         backgroundColor: 'white',
         borderRadius: '8px',
+        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
         overflow: 'hidden',
-        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+        fontFamily: 'Arial, sans-serif',
+        borderTop: '4px solid #007bff',
       }}
     >
-      {/* Linea blu superiore che attraversa tutta la card */}
+      {/* Header originale */}
       <div
         style={{
-          height: '4px',
-          backgroundColor: '#007bff',
-          width: '100%',
-        }}
-      ></div>
-
-      {/* Header che replica esattamente lo stile esistente */}
-      <div
-        style={{
-          backgroundColor: '#f8f9fa',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
           padding: '20px',
           borderBottom: '1px solid #e9ecef',
+          backgroundColor: '#f8f9fa',
         }}
       >
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'flex-start',
-            justifyContent: 'space-between',
-          }}
-        >
-          <div style={{ flex: 1 }}>
+        <div>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              marginBottom: '12px',
+            }}
+          >
+            <div
+              style={{
+                backgroundColor: '#ffc107',
+                color: 'white',
+                padding: '4px 8px',
+                borderRadius: '4px',
+                fontSize: '12px',
+                fontWeight: 'bold',
+                marginRight: '8px',
+              }}
+            >
+              ⚡
+            </div>
+            <h3
+              style={{
+                margin: '0',
+                fontSize: '16px',
+                fontWeight: 'bold',
+                color: '#333',
+                textTransform: 'uppercase',
+              }}
+            >
+              DOMANDA ELETTRICA IN TEMPO REALE
+            </h3>
+          </div>
+
+          <div
+            style={{ fontSize: '14px', color: '#666', marginBottom: '16px' }}
+          >
+            Sistema Elettrico Peninsulare Italiano
+          </div>
+
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '16px',
+              marginBottom: '16px',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span style={{ fontSize: '16px' }}>📅</span>
+              <span style={{ fontSize: '14px', color: '#666' }}>
+                {currentTime.toLocaleDateString('it-IT', {
+                  day: '2-digit',
+                  month: '2-digit',
+                  year: 'numeric',
+                })}
+              </span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span style={{ fontSize: '16px' }}>🕘</span>
+              <span style={{ fontSize: '14px', color: '#666' }}>
+                {currentTime.toLocaleTimeString('it-IT', {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })}
+              </span>
+            </div>
+          </div>
+
+          <div>
+            <div
+              style={{
+                fontSize: '12px',
+                color: '#6c757d',
+                marginBottom: '4px',
+                fontWeight: '500',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+              }}
+            >
+              DOMANDA ATTUALE
+            </div>
+            <div
+              style={{
+                fontSize: '28px',
+                fontWeight: 'bold',
+                color: '#212529',
+                lineHeight: '1',
+              }}
+            >
+              {currentDataPoint.real.toFixed(1)}{' '}
+              <span style={{ fontSize: '16px', color: '#6c757d' }}>GW</span>
+            </div>
+          </div>
+        </div>
+
+        <div style={{ textAlign: 'right' }}>
+          <div
+            style={{
+              backgroundColor: '#f8f9fa',
+              border: '1px solid #e9ecef',
+              borderRadius: '8px',
+              padding: '12px',
+              marginBottom: '12px',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+            }}
+          >
             <div
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                marginBottom: '8px',
+                justifyContent: 'center',
+                fontSize: '13px',
+                color: '#495057',
+                marginBottom: '6px',
+                fontWeight: '500',
               }}
             >
-              <div
+              <span
                 style={{
-                  width: '24px',
-                  height: '24px',
-                  backgroundColor: '#ffc107',
-                  marginRight: '12px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '14px',
-                  fontWeight: 'bold',
-                  borderRadius: '4px',
+                  marginRight: '6px',
+                  fontSize: '16px',
                 }}
               >
-                ⚡
-              </div>
-              <h3
-                style={{
-                  margin: 0,
-                  fontSize: '18px',
-                  fontWeight: 'bold',
-                  color: '#212529',
-                }}
-              >
-                DOMANDA ELETTRICA IN TEMPO REALE
-              </h3>
+                📈
+              </span>
+              SCOSTAMENTO
             </div>
-            <p
-              style={{
-                margin: 0,
-                fontSize: '14px',
-                color: '#6c757d',
-                marginBottom: '16px',
-              }}
-            >
-              Sistema Elettrico Peninsulare Italiano
-            </p>
-
             <div
               style={{
-                backgroundColor: 'white',
-                border: '1px solid #dee2e6',
-                borderRadius: '8px',
-                padding: '16px',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-                maxWidth: '200px',
+                fontSize: '20px',
+                fontWeight: 'bold',
+                color: '#28a745',
+                textAlign: 'center',
               }}
             >
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  marginBottom: '8px',
-                }}
-              >
-                <span
-                  style={{
-                    marginRight: '8px',
-                    fontSize: '16px',
-                  }}
-                >
-                  📅
-                </span>
-                <span
-                  style={{
-                    fontSize: '14px',
-                    color: '#495057',
-                    fontWeight: '500',
-                  }}
-                >
-                  16/06/2025
-                </span>
-              </div>
-
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  marginBottom: '12px',
-                }}
-              >
-                <span
-                  style={{
-                    marginRight: '8px',
-                    fontSize: '16px',
-                  }}
-                >
-                  🕘
-                </span>
-                <span
-                  style={{
-                    fontSize: '14px',
-                    color: '#495057',
-                    fontWeight: '500',
-                  }}
-                >
-                  09:04
-                </span>
-              </div>
-
-              <div
-                style={{
-                  borderTop: '1px solid #e9ecef',
-                  paddingTop: '12px',
-                }}
-              >
-                <div
-                  style={{
-                    fontSize: '13px',
-                    color: '#6c757d',
-                    marginBottom: '4px',
-                    fontWeight: '500',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.5px',
-                  }}
-                >
-                  DOMANDA ATTUALE
-                </div>
-                <div
-                  style={{
-                    fontSize: '28px',
-                    fontWeight: 'bold',
-                    color: '#212529',
-                    lineHeight: '1',
-                  }}
-                >
-                  36.5{' '}
-                  <span style={{ fontSize: '16px', color: '#6c757d' }}>GW</span>
-                </div>
-              </div>
+              +{(currentDataPoint.real - currentDataPoint.scheduled).toFixed(1)}{' '}
+              GW
+            </div>
+            <div
+              style={{
+                fontSize: '11px',
+                color: '#6c757d',
+                textAlign: 'center',
+                marginTop: '2px',
+              }}
+            >
+              vs programmato
             </div>
           </div>
 
-          <div style={{ textAlign: 'right' }}>
+          <div
+            style={{
+              backgroundColor: '#f8f9fa',
+              border: '1px solid #e9ecef',
+              borderRadius: '8px',
+              padding: '12px',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+            }}
+          >
             <div
               style={{
-                backgroundColor: '#f8f9fa',
-                border: '1px solid #e9ecef',
-                borderRadius: '8px',
-                padding: '12px',
-                marginBottom: '12px',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '13px',
+                color: '#495057',
+                marginBottom: '6px',
+                fontWeight: '500',
               }}
             >
-              <div
+              <span
                 style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '13px',
-                  color: '#495057',
-                  marginBottom: '6px',
-                  fontWeight: '500',
+                  marginRight: '6px',
+                  fontSize: '16px',
                 }}
               >
-                <span
-                  style={{
-                    marginRight: '6px',
-                    fontSize: '16px',
-                  }}
-                >
-                  📈
-                </span>
-                SCOSTAMENTO
-              </div>
-              <div
-                style={{
-                  fontSize: '20px',
-                  fontWeight: 'bold',
-                  color: '#28a745',
-                  textAlign: 'center',
-                }}
-              >
-                +0.3 GW
-              </div>
-              <div
-                style={{
-                  fontSize: '11px',
-                  color: '#6c757d',
-                  textAlign: 'center',
-                  marginTop: '2px',
-                }}
-              >
-                vs programmato
-              </div>
+                🎯
+              </span>
+              PRECISIONE
             </div>
-
             <div
               style={{
-                backgroundColor: '#f8f9fa',
-                border: '1px solid #e9ecef',
-                borderRadius: '8px',
-                padding: '12px',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                fontSize: '20px',
+                fontWeight: 'bold',
+                color: '#007bff',
+                textAlign: 'center',
               }}
             >
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '13px',
-                  color: '#495057',
-                  marginBottom: '6px',
-                  fontWeight: '500',
-                }}
-              >
-                <span
-                  style={{
-                    marginRight: '6px',
-                    fontSize: '16px',
-                  }}
-                >
-                  🎯
-                </span>
-                PRECISIONE
-              </div>
-              <div
-                style={{
-                  fontSize: '20px',
-                  fontWeight: 'bold',
-                  color: '#007bff',
-                  textAlign: 'center',
-                }}
-              >
-                99.2%
-              </div>
-              <div
-                style={{
-                  fontSize: '11px',
-                  color: '#6c757d',
-                  textAlign: 'center',
-                  marginTop: '2px',
-                }}
-              >
-                accuratezza
-              </div>
+              {(
+                100 -
+                (Math.abs(currentDataPoint.real - currentDataPoint.scheduled) /
+                  currentDataPoint.real) *
+                  100
+              ).toFixed(1)}
+              %
+            </div>
+            <div
+              style={{
+                fontSize: '11px',
+                color: '#6c757d',
+                textAlign: 'center',
+                marginTop: '2px',
+              }}
+            >
+              accuratezza
             </div>
           </div>
         </div>
@@ -547,9 +499,9 @@ const ModernEnergyDemandChart = () => {
 
             <Tooltip content={<CustomTooltip />} />
 
-            {/* Linea di riferimento per l'ora corrente */}
+            {/* Linea di riferimento per l'ora corrente - ora dinamica */}
             <ReferenceLine
-              x='09:00'
+              x={currentTimeFormatted}
               stroke='#dc3545'
               strokeWidth={2}
               strokeDasharray='4 4'
