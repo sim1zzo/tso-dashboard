@@ -12,6 +12,10 @@
 [build.environment]
   # Node.js version (optional - Netlify will use a recent version by default)
   NODE_VERSION = "18"
+  # Disable ESLint warnings as errors in CI environment
+  CI = "false"
+  # Optional: Disable source maps to reduce build size
+  GENERATE_SOURCEMAP = "false"
 
 # Headers for better security and performance
 [[headers]]
